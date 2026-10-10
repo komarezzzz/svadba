@@ -330,9 +330,10 @@
     S.delivered = false;
     if (CFG.endpoint) {
       try {
+        // Свой сервер — обычный запрос; внешний приёмник (Apps Script) — «простой» запрос, ответ читаем как JSON.
         const same = new URL(CFG.endpoint, location.href).origin === location.origin;
-        const r = await fetch(CFG.endpoint, { method: "POST", mode: same ? "same-origin" : "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload()) });
-        S.delivered = r.ok || r.type === "opaque";
+        const r = await fetch(CFG.endpoint, { method: "POST", mode: same ? "same-origin" : "cors", redirect: "follow", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload()) });
+        S.delivered = r.ok && (await r.json()).ok === true;
       } catch (e) { S.delivered = false; }
     }
     S.sent = true;
