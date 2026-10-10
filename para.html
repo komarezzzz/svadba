@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#F4EFE7">
+<title>Новая пара · Григорий Комаревцев</title>
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .out { margin-top: 30px; background: var(--paper); border: 1.5px solid var(--line); border-radius: 18px; padding: 16px; }
+  .out h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .out p { margin: 0 0 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .out .row { display: flex; flex-wrap: wrap; gap: 8px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <main class="screen hero">
+    <p class="kicker">Для ведущего · не для пары</p>
+    <h1><mark>Новая пара</mark></h1>
+    <p class="lede">Введите имена — получите личные ссылки и готовые сообщения. По метке в ссылке ответы пары не перепутаются с чужими.</p>
+    <div class="field">
+      <div class="label">Имена</div>
+      <div class="pair">
+        <label class="who who-b"><span class="who-name">Невеста</span><input type="text" id="b" placeholder="Аня" autocomplete="off"></label>
+        <label class="who who-g"><span class="who-name">Жених</span><input type="text" id="g" placeholder="Ваня" autocomplete="off"></label>
+      </div>
+    </div>
+    <div id="outs" hidden>
+      <section class="out"><h3>Шаг 1 · бриф</h3><p id="t1"></p><div class="row"><button class="primary" data-copy="t1">Скопировать сообщение</button><a class="ghost" id="o1" target="_blank" rel="noopener">Открыть</a></div></section>
+      <section class="out"><h3>Шаг 2 · программа — после брифа</h3><p id="t2"></p><div class="row"><button class="primary" data-copy="t2">Скопировать сообщение</button><a class="ghost" id="o2" target="_blank" rel="noopener">Открыть</a></div></section>
+      <p class="msg" id="msg" aria-live="polite"></p>
+    </div>
+  </main>
+</div>
+<script>
+(function () {
+  const MAP = { а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"e",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"h",ц:"c",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya" };
+  const slug = s => s.trim().toLowerCase().split("").map(c => c in MAP ? MAP[c] : c).join("").replace(/[^a-z0-9]+/g, "");
+  const $ = id => document.getElementById(id);
+  const base = location.href.replace(/[^/]*$/, "");
+  function paint() {
+    const b = $("b").value.trim(), g = $("g").value.trim();
+    $("outs").hidden = !(b && g);
+    if (!b || !g) return;
+    const q = "?c=" + slug(b) + "-" + slug(g) + "&n=" + encodeURIComponent(b + " и " + g);
+    const u1 = base + q, u2 = base + "program.html" + q;
+    $("o1").href = u1; $("o2").href = u2;
+    $("t1").textContent = b + " и " + g + ", привет! Это Григорий.\n\nЧтобы вечер получился про вас, а не «как у всех», расскажите мне о себе — вот бриф:\n" + u1 + "\n\nЭто 20–30 минут, ответы сохраняются сами, можно заполнять в несколько заходов. В конце нажмите «Отправить Григорию» и перешлите мне файл сюда.";
+    $("t2").textContent = b + " и " + g + ", спасибо за бриф — прочитал, уже есть идеи.\n\nТеперь соберём программу: отметьте, что вам нравится, а что точно не ваше —\n" + u2 + "\n\nТам нужно только нажимать, минут 10–15. В конце так же перешлите мне файл.";
+  }
+  $("b").oninput = $("g").oninput = paint;
+  document.querySelectorAll("[data-copy]").forEach(btn => btn.onclick = async () => {
+    try { await navigator.clipboard.writeText($(btn.dataset.copy).textContent); $("msg").textContent = "Скопировано — вставьте в сообщение паре."; }
+    catch (e) { $("msg").textContent = "Не получилось скопировать — выделите текст вручную."; }
+  });
+})();
+</script>
+</body>
+</html>
