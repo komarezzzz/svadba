@@ -242,7 +242,7 @@
     return h("main", { class: "screen hero" },
       h("p", { class: "kicker" }, ok ? "Ответы доставлены" : "Остался один шаг"),
       h("h1", null, h("mark", null, d.title)),
-      h("p", { class: "lede" }, ok ? d.text : "Нажмите кнопку ниже и выберите Telegram — файл с ответами уйдёт Григорию (@" + CFG.host.tg + "). " + d.text),
+      h("p", { class: "lede" }, ok ? d.text : "Нажмите кнопку ниже, выберите Telegram и отправьте файл с ответами мне — @" + CFG.host.tg + ". " + d.text),
       h("div", { class: "actions" },
         h("button", { type: "button", class: "primary big", onclick: share }, ok ? "Сохранить копию себе" : "Отправить Григорию"),
         h("button", { type: "button", class: "ghost", onclick: copyText }, "Скопировать текстом"),
