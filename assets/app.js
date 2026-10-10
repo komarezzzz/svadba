@@ -4,7 +4,8 @@
   const CFG = window.WC_CONFIG, FORM = window.WC_FORM;
   const qs = new URLSearchParams(location.search);
   const couple = (qs.get("c") || "para").toLowerCase().replace(/[^a-z0-9а-яё_-]/gi, "").slice(0, 40) || "para";
-  const greet = (qs.get("n") || "").slice(0, 60);
+  // Обращение на первом экране: ?n=… или из метки вида «юля-и-серёжа».
+  const greet = (qs.get("n") || (couple.includes("-и-") ? couple.split("-").filter(Boolean).map(w => w === "и" ? w : w[0].toUpperCase() + w.slice(1)).join(" ") : "")).slice(0, 60);
   const KEY = "wc:" + FORM.kind + ":" + couple;
   const N = FORM.sections.length;
   const REACT = [["yes", "Хотим"], ["maybe", "Можно"], ["no", "Не наше"]];

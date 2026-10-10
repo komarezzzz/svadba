@@ -36,15 +36,14 @@
 </div>
 <script>
 (function () {
-  const MAP = { а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"e",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"h",ц:"c",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya" };
-  const slug = s => s.trim().toLowerCase().split("").map(c => c in MAP ? MAP[c] : c).join("").replace(/[^a-z0-9]+/g, "");
+  const slug = s => s.trim().toLowerCase().replace(/[^a-zа-яё0-9]+/g, "");
   const $ = id => document.getElementById(id);
   const base = location.href.replace(/[^/]*$/, "");
   function paint() {
     const b = $("b").value.trim(), g = $("g").value.trim();
     $("outs").hidden = !(b && g);
     if (!b || !g) return;
-    const q = "?c=" + slug(b) + "-" + slug(g) + "&n=" + encodeURIComponent(b + " и " + g);
+    const q = "?c=" + slug(b) + "-и-" + slug(g);
     const u1 = base + q, u2 = base + "program.html" + q;
     $("o1").href = u1; $("o2").href = u2;
     $("t1").textContent = b + " и " + g + ", привет! Это Григорий.\n\nЧтобы вечер получился про вас, а не «как у всех», расскажите мне о себе — вот бриф:\n" + u1 + "\n\nЭто 20–30 минут, ответы сохраняются сами, можно заполнять в несколько заходов. В конце нажмите «Отправить Григорию» и перешлите мне файл сюда.";
