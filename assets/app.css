@@ -1,0 +1,156 @@
+/* Дизайн-план. Образ: лист тайминга ведущего — кремовая бумага, чёрная типографика, жёлтый маркер.
+   Цвета — brand_spec.json Григория (чёрный, кремовый, жёлтый акцент, фиолетовый для действий).
+   Шрифты студии, локально: Ysabeau SC (заголовки, капитель), Finlandica Headline (текст), Vasek (подпись).
+   Раскладка: один раздел на экран, колонка 680 px, телефон — первая цель. */
+@font-face { font-family: "Ysabeau SC"; src: url("fonts/ysabeau-sc.woff2") format("woff2"); font-weight: 1 1000; font-display: swap; }
+@font-face { font-family: "Finlandica"; src: url("fonts/finlandica.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Vasek"; src: url("fonts/vasek.woff2") format("woff2"); font-display: swap; }
+
+:root {
+  --bg: #F4EFE7; --paper: #FFFCF6; --ink: #111111; --text: #222222; --muted: #6B6470;
+  --line: #DCD2C2; --accent: #F2C94C; --act: #5B2A86; --act-ink: #FFFFFF; --no: #A63D2A; --no-bg: #F6E2DC;
+  --r: 14px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #100E11; --paper: #1B181D; --ink: #F4EFE7; --text: #E6DFD5; --muted: #A79DAC;
+    --line: #38323B; --act: #C7A2EE; --act-ink: #17101D; --no: #F0907C; --no-bg: #3A1F1A;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 400 17px/1.5 "Finlandica", system-ui, sans-serif; }
+#app { max-width: 680px; margin: 0 auto; padding: 0 16px calc(32px + env(safe-area-inset-bottom)); }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid var(--act); outline-offset: 2px; }
+h1, h2 { font-family: "Ysabeau SC", Georgia, serif; color: var(--ink); margin: 0; line-height: 1.02; letter-spacing: .01em; outline: none; text-wrap: balance; }
+h1 { font-size: clamp(40px, 11vw, 68px); font-weight: 750; }
+h2 { font-size: clamp(32px, 8.4vw, 46px); font-weight: 750; }
+mark { color: inherit; background: linear-gradient(transparent 62%, var(--accent) 62%, var(--accent) 94%, transparent 94%); padding: 0 .08em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+@media (prefers-color-scheme: dark) { mark { background: linear-gradient(transparent 86%, var(--accent) 86%); } }
+
+/* шапка и тайминг-рейка */
+.top { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 12px 0 10px; border-bottom: 1px solid var(--line); }
+.top-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.brand { text-decoration: none; color: var(--ink); display: flex; gap: 8px; align-items: baseline; font-size: 14px; }
+.brand b { font-family: "Ysabeau SC", serif; font-weight: 700; font-size: 17px; letter-spacing: .03em; }
+.brand span, .saved { color: var(--muted); font-size: 13px; }
+.saved { opacity: 0; transition: opacity .3s; }
+.saved.on { opacity: 1; }
+.saved::before { content: "✓ "; color: var(--act); }
+.rail { display: flex; gap: 4px; margin-top: 10px; }
+.rail button { flex: 1; min-width: 0; border: 0; background: none; padding: 6px 0 0; position: relative; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; text-align: left; }
+.rail button::before, .rail button::after { content: ""; position: absolute; left: 0; top: 0; height: 4px; border-radius: 2px; }
+.rail button::before { right: 0; background: var(--line); }
+.rail button::after { width: var(--fill, 0%); background: var(--ink); transition: width .3s; }
+.rail button[aria-current="step"] { color: var(--ink); font-weight: 700; }
+.rail button[aria-current="step"]::before { background: var(--accent); }
+
+/* экраны */
+.screen { padding: 28px 0 0; animation: in .35s ease both; }
+@keyframes in { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) { .screen { animation: none; } * { transition: none !important; } }
+.hero { padding-top: clamp(40px, 12vh, 110px); }
+.kicker { margin: 0 0 14px; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.greet { display: block; font-size: .5em; font-weight: 600; margin-bottom: .2em; }
+.lede { font-size: 19px; line-height: 1.45; margin: 16px 0 0; max-width: 34em; }
+.facts { list-style: none; padding: 0; margin: 22px 0 28px; display: flex; flex-wrap: wrap; gap: 8px; }
+.facts li { border: 1px solid var(--line); border-radius: 99px; padding: 5px 13px; font-size: 14px; color: var(--muted); }
+.sign { font: 44px/1 "Vasek", cursive; color: var(--ink); margin: 36px 0 0; transform: rotate(-4deg); transform-origin: left; }
+.sec-head { display: flex; gap: 14px; align-items: flex-start; }
+.num { font: 800 15px/1 "Ysabeau SC", serif; color: var(--ink); border: 2px solid var(--ink); border-radius: 50%; width: 44px; height: 44px; flex: none; display: grid; place-items: center; margin-top: 2px; }
+.time { display: inline-block; margin-top: 10px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* поля */
+.field { margin-top: 30px; scroll-margin-top: 110px; }
+.label { font-weight: 650; font-size: 19px; line-height: 1.25; color: var(--ink); }
+.label i { font-style: normal; font-weight: 400; color: var(--muted); font-size: 15px; }
+.hint { margin: 5px 0 0; color: var(--muted); font-size: 15px; line-height: 1.4; }
+.label + *, .hint + * { margin-top: 12px; }
+input[type="text"], input[type="date"], textarea {
+  display: block; width: 100%; background: var(--paper); border: 1.5px solid var(--line); border-radius: var(--r);
+  padding: 13px 14px; font-size: 17px; line-height: 1.4; transition: border-color .15s;
+}
+textarea { resize: none; overflow: hidden; min-height: 92px; }
+.big textarea { min-height: 150px; }
+input:focus, textarea:focus { outline: none; border-color: var(--act); box-shadow: 0 0 0 3px color-mix(in srgb, var(--act) 22%, transparent); }
+::placeholder { color: var(--muted); opacity: .7; }
+.pair { display: grid; gap: 12px; }
+@media (min-width: 600px) { .pair { grid-template-columns: 1fr 1fr; } }
+.who-name { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.who-name::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+.who-g .who-name::before { background: var(--act); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1.5px solid var(--line); background: var(--paper); border-radius: 99px; padding: 10px 16px; min-height: 44px; font-size: 16px; line-height: 1.2; text-align: left; transition: background .15s, border-color .15s, transform .1s; }
+.chip:active, .r:active { transform: scale(.97); }
+.chip[aria-checked="true"], .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.chips-no .chip[aria-pressed="true"] { background: var(--no-bg); border-color: var(--no); color: var(--no); text-decoration: line-through; }
+.other { margin-top: 10px; }
+.scale { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size: 14px; color: var(--muted); }
+.scale-dots { grid-column: 1 / -1; grid-row: 1; display: flex; gap: 8px; }
+.scale-r { text-align: right; }
+.dot { flex: 1; height: 48px; border-radius: var(--r); border: 1.5px solid var(--line); background: var(--paper); font-weight: 700; font-variant-numeric: tabular-nums; }
+.dot[aria-checked="true"] { background: var(--accent); border-color: var(--ink); color: #111; }
+.list { margin: 0 0 10px; padding: 0; list-style: none; counter-reset: n; display: grid; gap: 8px; }
+.list li { counter-increment: n; display: flex; align-items: center; gap: 10px; }
+.list li::before { content: counter(n); font: 800 16px "Ysabeau SC", serif; width: 20px; color: var(--muted); }
+.check { display: flex; gap: 14px; align-items: flex-start; background: var(--paper); border: 1.5px solid var(--line); border-radius: var(--r); padding: 14px; cursor: pointer; }
+.check input { position: absolute; opacity: 0; }
+.check-box { flex: none; width: 26px; height: 26px; border-radius: 8px; border: 2px solid var(--ink); display: grid; place-items: center; }
+.check input:checked + .check-box { background: var(--accent); }
+.check input:checked + .check-box::after { content: "✓"; color: #111; font-weight: 800; }
+.check input:focus-visible + .check-box { outline: 3px solid var(--act); outline-offset: 2px; }
+.check b { display: block; color: var(--ink); font-weight: 650; line-height: 1.3; }
+.check small { display: block; color: var(--muted); font-size: 14px; margin-top: 3px; }
+.need .check { border-color: var(--no); box-shadow: 0 0 0 3px var(--no-bg); }
+.need .check::after { content: "нужна галочка"; color: var(--no); font-size: 13px; white-space: nowrap; }
+
+/* карточки программы */
+.picks { display: grid; gap: 12px; }
+.pick { background: var(--paper); border: 1.5px solid var(--line); border-radius: 18px; padding: 16px; transition: opacity .2s, border-color .2s; }
+.pick[data-r="yes"] { border-color: var(--ink); box-shadow: 4px 4px 0 var(--accent); }
+.pick[data-r="no"] { opacity: .55; }
+.pick[data-r="no"] h3 { text-decoration: line-through; }
+.pick-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.pick h3 { margin: 0; font-size: 19px; line-height: 1.2; font-weight: 700; color: var(--ink); }
+.pick-meta { flex: none; display: flex; gap: 6px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tag { color: var(--act); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-size: 12px; }
+.pick p { margin: 6px 0 12px; font-size: 16px; line-height: 1.4; }
+.react { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.r { min-height: 44px; border-radius: 12px; border: 1.5px solid var(--line); background: none; font-size: 15px; font-weight: 600; transition: transform .1s; }
+.r-yes[aria-checked="true"] { background: var(--accent); border-color: var(--ink); color: #111; }
+.r-maybe[aria-checked="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.r-no[aria-checked="true"] { background: var(--no-bg); border-color: var(--no); color: var(--no); }
+.note { margin-top: 10px; min-height: 0; font-size: 16px; }
+.link { background: none; border: 0; padding: 10px 0 0; color: var(--act); font-size: 15px; text-decoration: underline; text-underline-offset: 3px; }
+[hidden] { display: none !important; }
+
+/* итог программы */
+.sum-total { font-size: 18px; margin: 0 0 14px; }
+.sum-total b { font: 800 30px/1 "Ysabeau SC", serif; color: var(--ink); background: var(--accent); color: #111; padding: 2px 8px; border-radius: 8px; margin-right: 6px; }
+.sum-block { border-top: 1.5px solid var(--line); padding: 12px 0; }
+.sum-block h3 { margin: 0 0 6px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.sum-block ul { margin: 0; padding: 0; list-style: none; }
+.sum-block li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; }
+.sum-block li span { color: var(--muted); font-size: 14px; text-align: right; flex: none; }
+.sum-block.no b { font-weight: 400; text-decoration: line-through; color: var(--muted); }
+.empty { color: var(--muted); }
+
+/* кнопки */
+.primary, .ghost { min-height: 52px; border-radius: 99px; padding: 0 26px; font-size: 17px; font-weight: 700; border: 2px solid var(--ink); display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.primary { background: var(--ink); color: var(--bg); }
+.primary.big { min-height: 60px; padding: 0 36px; font-size: 19px; box-shadow: 5px 5px 0 var(--accent); }
+.primary:disabled { opacity: .6; }
+.ghost { background: none; color: var(--ink); border-color: var(--line); }
+.ghost.small { min-height: 40px; padding: 0 16px; font-size: 15px; font-weight: 600; }
+.nav { position: sticky; bottom: 0; display: flex; gap: 10px; margin: 36px -16px 0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 26%); }
+.nav .primary { flex: 1; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+.msg { min-height: 1.5em; color: var(--act); font-weight: 600; margin: 14px 0 0; }
+.next-step { display: block; margin: 22px 0 6px; padding: 18px; border-radius: 18px; background: var(--accent); color: #111; text-decoration: none; border: 2px solid #111; }
+.next-step span { display: block; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+.next-step b { font: 750 26px/1.1 "Ysabeau SC", serif; }
+.next-step b::after { content: " →"; }
