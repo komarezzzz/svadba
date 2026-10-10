@@ -308,7 +308,9 @@
   function payload() {
     const g = collectPicks(), picks = [];
     for (const r in g) g[r].forEach(x => picks.push({ phase: x.sec.title, id: x.o.id, title: x.o.title, dur: x.o.dur || 0, r, c: x.c || "" }));
-    return { app: "wedding-constructor", version: CFG.version, kind: FORM.kind, couple, names: S.a.names || null, sentAt: new Date().toISOString(), answers: S.a, picks, text: toText() };
+    // doc — те же ответы по разделам «вопрос → ответ»: из них приёмник верстает Google Документ.
+    const doc = FORM.sections.map(sec => ({ section: sec.title, items: sec.fields.filter(f => f.type !== "summary").map(f => ({ q: f.label || "", a: fmt(f) })).filter(x => x.a) })).filter(x => x.items.length);
+    return { app: "wedding-constructor", version: CFG.version, kind: FORM.kind, couple, names: S.a.names || null, sentAt: new Date().toISOString(), answers: S.a, picks, doc, text: toText() };
   }
   function fileOf(p) {
     const body = p.text + "\n\n=== данные для конструктора (не редактировать) ===\n" + JSON.stringify(p);
