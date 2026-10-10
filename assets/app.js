@@ -16,6 +16,7 @@
     const b = read("wc:brief:" + couple).a;
     if (b && b.names) S.a.names = b.names;
   }
+  const NO_SCREEN = read("wc:brief:" + couple).a && read("wc:brief:" + couple).a.screen === "Нет";
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* личный режим браузера — работаем без памяти */ } }
 
   function h(tag, attrs) {
@@ -146,9 +147,14 @@
           }
         }, label)));
         const meta = [o.dur ? o.dur + " мин" : "фоном", o.tag].filter(Boolean);
+        const pm = /^(пара|я)[^:]*: (.+)$/.exec(o.prep || "");
+        const prep = pm ? (pm[1] === "я" ? "С меня: " : "С вас: ") + pm[2] : o.prep && o.prep !== "нет" ? "Нужно: " + o.prep : "";
+        const screen = o.screen === "да" ? (NO_SCREEN ? "Нужен экран — на площадке его нет, обсудим проектор" : "Нужен экран") : "";
         card.append(
           h("div", { class: "pick-head" }, h("h3", null, o.title), h("span", { class: "pick-meta" }, meta.map((m, i) => h("span", { class: i ? "tag" : "" }, m)))),
-          h("p", null, o.text), btns,
+          h("p", null, o.text),
+          prep || screen ? h("ul", { class: "needs" }, prep ? h("li", null, prep) : null, screen ? h("li", { class: NO_SCREEN ? "warn" : "" }, screen) : null) : null,
+          btns,
           h("button", { type: "button", class: "link", onclick(e) { note.hidden = false; e.currentTarget.hidden = true; note.focus(); }, hidden: !!cur().c }, "+ комментарий"),
           note);
         return card;
@@ -249,13 +255,25 @@
         h("button", { type: "button", class: "ghost", onclick: copyText }, "Скопировать текстом"),
         ok ? null : h("a", { class: "ghost", href: tg, target: "_blank", rel: "noopener" }, "Открыть Telegram Григория")),
       h("p", { id: "msg", class: "msg", "aria-live": "polite" }),
-      d.next ? h("a", { class: "next-step", href: d.next.href + location.search }, h("span", null, "Дальше"), h("b", null, d.next.label)) : null,
+      d.next && !CFG.programLocked ? h("a", { class: "next-step", href: d.next.href + location.search }, h("span", null, "Дальше"), h("b", null, d.next.label)) : null,
+      d.next && CFG.programLocked ? h("div", { class: "next-step off" }, h("span", null, "Дальше"), h("b", null, "Шаг 2 · Программа"), h("small", null, "Откроется позже — я пришлю ссылку, когда прочитаю ваш бриф.")) : null,
       h("button", { type: "button", class: "link", onclick: () => go(0) }, "Вернуться и поправить ответы"),
+      h("p", { class: "sign" }, CFG.host.short));
+  }
+
+  const LOCKED = CFG.programLocked && !qs.has("preview");
+  function locked() {
+    return h("main", { class: "screen hero" },
+      h("p", { class: "kicker" }, "Шаг 2 из 2 · программа"),
+      h("h1", null, h("mark", null, "Скоро откроется")),
+      h("p", { class: "lede" }, "Программу вечера я собираю под вас после того, как прочитаю бриф. Когда всё будет готово, пришлю ссылку — и вы выберете, что вам по душе."),
+      h("a", { class: "primary big", href: "index.html" + location.search }, "Вернуться к брифу"),
       h("p", { class: "sign" }, CFG.host.short));
   }
 
   function render() {
     app.replaceChildren();
+    if (LOCKED && FORM.kind === "program") { app.append(locked()); return; }
     if (S.i < 0) { rail = null; app.append(welcome()); return; }
     app.append(header(), S.i >= N ? done() : section(S.i));
     paintRail();

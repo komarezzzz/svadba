@@ -119,6 +119,9 @@ input:focus, textarea:focus { outline: none; border-color: var(--act); box-shado
 .pick-meta { flex: none; display: flex; gap: 6px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .tag { color: var(--act); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-size: 12px; }
 .pick p { margin: 6px 0 12px; font-size: 16px; line-height: 1.4; }
+.needs { list-style: none; margin: -4px 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; font-size: 13px; color: var(--muted); }
+.needs li { border: 1px dashed var(--line); border-radius: 8px; padding: 3px 9px; }
+.needs .warn { border-color: var(--no); color: var(--no); background: var(--no-bg); }
 .react { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .r { min-height: 44px; border-radius: 12px; border: 1.5px solid var(--line); background: none; font-size: 15px; font-weight: 600; transition: transform .1s; }
 .r-yes[aria-checked="true"] { background: var(--accent); border-color: var(--ink); color: #111; }
@@ -154,3 +157,7 @@ input:focus, textarea:focus { outline: none; border-color: var(--act); box-shado
 .next-step span { display: block; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
 .next-step b { font: 750 26px/1.1 "Ysabeau SC", serif; }
 .next-step b::after { content: " →"; }
+.next-step.off { background: none; border: 2px dashed var(--line); color: var(--muted); }
+.next-step.off b { color: var(--muted); }
+.next-step.off b::after { content: " · закрыт"; font-size: .6em; letter-spacing: .08em; }
+.next-step small { display: block; margin-top: 6px; font-size: 15px; }
