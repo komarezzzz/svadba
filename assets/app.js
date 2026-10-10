@@ -131,6 +131,14 @@
     },
     pick(f) {
       const val = () => S.a[f.id] || {};
+      const count = h("p", { class: "hint pick-count", "aria-live": "polite" });
+      const recount = () => {
+        const yes = f.options.filter(o => (val()[o.id] || {}).r === "yes");
+        const mins = yes.reduce((s, o) => s + (o.dur || 0), 0);
+        count.textContent = yes.length ? "В этой фазе вы точно хотите: " + yes.length + (mins ? " · ≈ " + mins + " мин" : " · идёт фоном") : "";
+        count.hidden = !yes.length;
+      };
+      recount();
       return h("div", { class: "picks" }, f.options.map(o => {
         const cur = () => val()[o.id] || {};
         const card = h("article", { class: "pick", "data-r": cur().r || "" });
@@ -143,6 +151,7 @@
             const next = cur().r === r ? "" : r;
             set(f.id, Object.assign({}, val(), { [o.id]: Object.assign({}, cur(), { r: next }) }));
             card.dataset.r = next;
+            recount();
             btns.querySelectorAll(".r").forEach(b => b.setAttribute("aria-checked", String(b.classList.contains("r-" + next))));
           }
         }, label)));
@@ -153,12 +162,12 @@
         card.append(
           h("div", { class: "pick-head" }, h("h3", null, o.title), h("span", { class: "pick-meta" }, meta.map((m, i) => h("span", { class: i ? "tag" : "" }, m)))),
           h("p", null, o.text),
-          prep || screen ? h("ul", { class: "needs" }, prep ? h("li", null, prep) : null, screen ? h("li", { class: NO_SCREEN ? "warn" : "" }, screen) : null) : null,
+          prep || screen || o.pair ? h("ul", { class: "needs" }, prep ? h("li", null, prep) : null, o.pair ? h("li", null, "Работает вместе с «" + o.pair + "»") : null, screen ? h("li", { class: NO_SCREEN ? "warn" : "" }, screen) : null) : null,
           btns,
           h("button", { type: "button", class: "link", onclick(e) { note.hidden = false; e.currentTarget.hidden = true; note.focus(); }, hidden: !!cur().c }, "+ комментарий"),
           note);
         return card;
-      }));
+      }), count);
     },
     summary() {
       const groups = collectPicks();
