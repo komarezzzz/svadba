@@ -300,7 +300,8 @@
     if (f.type === "check") return v ? "да" : "";
     if (f.type === "pick") return REACT.map(([r, label]) => {
       const xs = f.options.filter(o => ((v || {})[o.id] || {}).r === r).map(o => o.title + (v[o.id].c ? " (" + v[o.id].c + ")" : ""));
-      return xs.length ? label + ": " + xs.join("; ") : "";
+      const mins = r === "yes" ? f.options.filter(o => ((v || {})[o.id] || {}).r === r).reduce((t, o) => t + (o.dur || 0), 0) : 0;
+      return xs.length ? label + (r === "yes" ? " (" + xs.length + (mins ? ", ≈ " + mins + " мин" : ", фоном") + ")" : "") + ": " + xs.join("; ") : "";
     }).concat(f.options.filter(o => v && v[o.id] && !v[o.id].r && v[o.id].c).map(o => "Комментарий к «" + o.title + "»: " + v[o.id].c)).filter(Boolean).join("\n");
     return filled(v) ? String(v) : "";
   }
