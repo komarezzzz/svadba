@@ -29,7 +29,7 @@
     </div>
     <div id="outs" hidden>
       <section class="out"><h3>Шаг 1 · бриф</h3><p id="t1"></p><div class="row"><button class="primary" data-copy="t1">Скопировать сообщение</button><a class="ghost" id="o1" target="_blank" rel="noopener">Открыть</a></div></section>
-      <section class="out"><h3>Шаг 2 · программа — пока закрыт для пар, не отправлять</h3><p id="t2"></p><div class="row"><button class="primary" data-copy="t2">Скопировать сообщение</button><a class="ghost" id="o2" target="_blank" rel="noopener">Открыть</a></div></section>
+      <section class="out"><h3>Шаг 2 · программа — закрыт для всех, этой паре можно дать личную ссылку</h3><label class="check" style="margin:0 0 12px"><input type="checkbox" id="pv" checked> <span>Личная ссылка: откроется только у этой пары</span></label><p id="t2"></p><div class="row"><button class="primary" data-copy="t2">Скопировать сообщение</button><a class="ghost" id="o2" target="_blank" rel="noopener">Открыть</a></div></section>
       <p class="msg" id="msg" aria-live="polite"></p>
     </div>
   </main>
@@ -44,12 +44,12 @@
     $("outs").hidden = !(b && g);
     if (!b || !g) return;
     const q = "?c=" + slug(b) + "-и-" + slug(g);
-    const u1 = base + q, u2 = base + "program.html" + q;
+    const u1 = base + q, u2 = base + "program.html" + q + ($("pv").checked ? "&preview=1" : "");
     $("o1").href = u1; $("o2").href = u2;
     $("t1").textContent = b + " и " + g + ", привет! Это Григорий.\n\nЧтобы вечер получился про вас, а не «как у всех», расскажите мне о себе — вот бриф:\n" + u1 + "\n\nЭто 20–30 минут, ответы сохраняются сами, можно заполнять в несколько заходов. В конце нажмите «Отправить Григорию» — ответы придут мне сами.";
-    $("t2").textContent = b + " и " + g + ", спасибо за бриф — прочитал, уже есть идеи.\n\nТеперь соберём программу: отметьте, что вам нравится, а что точно не ваше —\n" + u2 + "\n\nТам нужно только нажимать, минут 10–15. В конце так же нажмите «Отправить Григорию».";
+    $("t2").textContent = b + " и " + g + ", спасибо за бриф — прочитал, уже есть идеи.\n\nТеперь соберём программу: отметьте, что вам нравится, а что точно не ваше —\n" + u2 + "\n\nТам нужно только нажимать, минут 15–20. В конце так же нажмите «Отправить Григорию».";
   }
-  $("b").oninput = $("g").oninput = paint;
+  $("b").oninput = $("g").oninput = $("pv").onchange = paint;
   document.querySelectorAll("[data-copy]").forEach(btn => btn.onclick = async () => {
     try { await navigator.clipboard.writeText($(btn.dataset.copy).textContent); $("msg").textContent = "Скопировано — вставьте в сообщение паре."; }
     catch (e) { $("msg").textContent = "Не получилось скопировать — выделите текст вручную."; }

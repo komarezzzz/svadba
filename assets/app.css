@@ -161,3 +161,7 @@ input:focus, textarea:focus { outline: none; border-color: var(--act); box-shado
 .next-step.off b { color: var(--muted); }
 .next-step.off b::after { content: " · закрыт"; font-size: .6em; letter-spacing: .08em; }
 .next-step small { display: block; margin-top: 6px; font-size: 15px; }
+
+/* Рисунок на карточке активности: тушь на бумаге, жёлтый маркер (версия B, утверждена 11.10) */
+.pick .sketch { margin: 10px 0 12px; border-radius: 10px; overflow: hidden; background: #F4EFE7; }
+.pick .sketch img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }

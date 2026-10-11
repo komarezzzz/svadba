@@ -161,6 +161,7 @@
         const screen = o.screen === "да" ? (NO_SCREEN ? "Нужен экран — на площадке его нет, обсудим проектор" : "Нужен экран") : "";
         card.append(
           h("div", { class: "pick-head" }, h("h3", null, o.title), h("span", { class: "pick-meta" }, meta.map((m, i) => h("span", { class: i ? "tag" : "" }, m)))),
+          o.img ? h("div", { class: "sketch" }, h("img", { src: "assets/img/program/" + o.id + ".jpg", alt: "", loading: "lazy", width: 1200, height: 800, style: "width:100%;height:auto" })) : null,
           h("p", null, o.text),
           prep || screen || o.pair ? h("ul", { class: "needs" }, prep ? h("li", null, prep) : null, o.pair ? h("li", null, "Работает вместе с «" + o.pair + "»") : null, screen ? h("li", { class: NO_SCREEN ? "warn" : "" }, screen) : null) : null,
           btns,
