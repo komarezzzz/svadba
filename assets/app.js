@@ -6,6 +6,9 @@
   const couple = (qs.get("c") || "para").toLowerCase().replace(/[^a-z0-9а-яё_-]/gi, "").slice(0, 40) || "para";
   // Обращение на первом экране: ?n=… или из метки вида «юля-и-серёжа».
   const greet = (qs.get("n") || (couple.includes("-и-") ? couple.split("-").filter(Boolean).map(w => w === "и" ? w : w[0].toUpperCase() + w.slice(1)).join(" ") : "")).slice(0, 60);
+  // Подборка для пары: если ведущий отметил карточки, пара видит только их (assets/sets.js).
+  const SET = FORM.kind === "program" && window.WC_SETS && window.WC_SETS[couple];
+  if (SET) FORM.sections.forEach(sec => sec.fields.forEach(f => { if (f.type === "pick") f.options = f.options.filter(o => SET.includes(o.id)); }));
   const KEY = "wc:" + FORM.kind + ":" + couple;
   const N = FORM.sections.length;
   const REACT = [["yes", "Хотим"], ["maybe", "Можно"], ["no", "Не наше"]];
