@@ -162,12 +162,16 @@
         const pm = /^(пара|я)[^:]*: (.+)$/.exec(o.prep || "");
         const prep = pm ? (pm[1] === "я" ? "С меня: " : "С вас: ") + pm[2] : o.prep && o.prep !== "нет" ? "Нужно: " + o.prep : "";
         const screen = o.screen === "да" ? (NO_SCREEN ? "Нужен экран — на площадке его нет, обсудим проектор" : "Нужен экран") : "";
+        const mo = (window.WC_MORE || {})[o.id];
+        const moreBox = mo ? h("div", { class: "more", hidden: true }, mo.map(t => h("p", null, t))) : null;
         card.append(
           h("div", { class: "pick-head" }, h("h3", null, o.title), h("span", { class: "pick-meta" }, meta.map((m, i) => h("span", { class: i ? "tag" : "" }, m)))),
           o.img ? h("div", { class: "sketch" }, h("img", { src: "assets/img/program/" + o.id + ".jpg", alt: "", loading: "lazy", width: 1200, height: 800, style: "width:100%;height:auto" })) : null,
           h("p", null, o.text),
           prep || screen || o.pair ? h("ul", { class: "needs" }, prep ? h("li", null, prep) : null, o.pair ? h("li", null, "Работает вместе с «" + o.pair + "»") : null, screen ? h("li", { class: NO_SCREEN ? "warn" : "" }, screen) : null) : null,
+          moreBox,
           btns,
+          moreBox ? h("button", { type: "button", class: "link", style: "margin-right:14px", "aria-expanded": "false", onclick(e) { moreBox.hidden = !moreBox.hidden; e.currentTarget.textContent = moreBox.hidden ? "Подробнее" : "Свернуть"; e.currentTarget.setAttribute("aria-expanded", String(!moreBox.hidden)); } }, "Подробнее") : null,
           h("button", { type: "button", class: "link", onclick(e) { note.hidden = false; e.currentTarget.hidden = true; note.focus(); }, hidden: !!cur().c }, "+ комментарий"),
           note);
         return card;

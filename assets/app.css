@@ -165,3 +165,8 @@ input:focus, textarea:focus { outline: none; border-color: var(--act); box-shado
 /* Рисунок на карточке активности: тушь на бумаге, жёлтый маркер (версия B, утверждена 11.10) */
 .pick .sketch { margin: 10px 0 12px; border-radius: 10px; overflow: hidden; background: #F4EFE7; }
 .pick .sketch img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
+
+/* Развёрнутое описание активности («Подробнее») */
+.pick .more { margin: 4px 0 14px; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--bg); border-radius: 0 10px 10px 0; }
+.pick .more p { margin: 0 0 8px; font-size: 15.5px; line-height: 1.5; }
+.pick .more p:last-child { margin: 0; color: var(--muted); }

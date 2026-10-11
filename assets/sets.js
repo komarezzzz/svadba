@@ -22,6 +22,7 @@ window.WC_SETS = {
   "firstdance",
   "bouquet",
   "awards",
-  "photo"
+  "photo",
+  "trailer"
  ]
 };
