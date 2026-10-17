@@ -1,0 +1,52 @@
+/* Только механика (не внешний вид): шторка, карусель, переключатель. Оформляет каждая концепция своим CSS. */
+*, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; cursor: pointer; }
+img { display: block; }
+[hidden] { display: none !important; }
+button, a, input, textarea, label { touch-action: manipulation; }
+.cr-skip { position: fixed; z-index: 100; left: 12px; top: -80px; padding: 12px 16px; border-radius: 12px; background: #fff; color: #111; font: 700 16px/1 system-ui, sans-serif; text-decoration: none; box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+.cr-skip:focus { top: max(12px, env(safe-area-inset-top)); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.cr-ico { display: inline-grid; place-items: center; line-height: 0; }
+
+/* шторка */
+.cr-scrim { position: fixed; inset: 0; opacity: 0; pointer-events: none; z-index: 60; }
+.cr-scrim.on { pointer-events: auto; }
+.cr-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 61; margin: 0 auto; width: min(100%, 560px); max-height: 92dvh; transform: translate3d(0, 105%, 0); will-change: transform; display: flex; flex-direction: column; touch-action: none; outline: 0; }
+.cr-grab { flex: none; width: 40px; height: 5px; border-radius: 3px; margin: 10px auto 6px; }
+.cr-sheet-body { overflow: auto; touch-action: pan-y; overscroll-behavior: contain; }
+
+/* карусель */
+.cr-pic { position: relative; overflow: hidden; }
+.cr-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; touch-action: pan-x pan-y; }
+.cr-track::-webkit-scrollbar { display: none; }
+.cr-slide { flex: 0 0 100%; margin: 0; aspect-ratio: 3 / 2; scroll-snap-align: start; }
+.cr-slide img { width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; }
+.cr-dots { position: absolute; left: 0; right: 0; bottom: 4px; display: flex; justify-content: center; pointer-events: none; }
+.cr-dot { pointer-events: auto; position: relative; width: 24px; height: 24px; padding: 0; border: 0; background: none; }
+.cr-dot::before { content: ""; position: absolute; inset: 8px; border-radius: 4px; transition: inset .25s, background .25s; }
+.cr-dot.on::before { inset: 8px 2px; }
+.cr-pp, .cr-nav { position: absolute; width: 44px; height: 44px; padding: 0; border: 0; display: grid; place-items: center; z-index: 2; }
+.cr-pp { top: 8px; right: 8px; }
+.cr-nav { top: 50%; margin-top: -22px; }
+.cr-prev { left: 8px; }
+.cr-next { right: 8px; }
+.cr-pic.single .cr-nav, .cr-pic.single .cr-pp { display: none; }
+
+/* переключатель «Хотим / Можно / Не наше» с плавающим ползунком */
+.cr-seg { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); --i: 3; }
+.cr-seg i { position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / 3); transform: translateX(calc(var(--i, 3) * 100%)); transition: transform .38s cubic-bezier(.3, 1.35, .5, 1), opacity .2s; opacity: 0; pointer-events: none; }
+.cr-seg[data-set="1"] i { opacity: 1; }
+.cr-seg button { position: relative; z-index: 1; background: transparent; border: 0; min-height: 44px; display: inline-flex; gap: 6px; align-items: center; justify-content: center; }
+.cr-fld { width: 100%; display: block; resize: none; font: inherit; color: inherit; }
+.cr-link { background: transparent; border: 0; min-height: 44px; padding: 0; }
+.cr-facts > div { display: flex; justify-content: space-between; gap: 16px; }
+.cr-facts b { text-align: right; }
+.cr-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cr-acts { display: grid; gap: 8px; }
+.cr-tl { display: grid; grid-template-columns: 54px 1fr; gap: 4px 10px; }
+.cr-tlh { grid-column: 1 / -1; }
+.cr-ul { margin: 0; padding: 0; list-style: none; }
+.cr-ul li { display: flex; gap: 10px; align-items: baseline; }
+.cr-ul small { margin-left: auto; flex: none; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition-duration: .01s !important; animation: none !important; } }
