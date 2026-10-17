@@ -231,13 +231,46 @@ main { max-width: 1240px; margin: 0 auto; padding: 0 var(--pad); }
 </style>
 <link rel="stylesheet" href="glass.css">
 <style>
-  .brief{max-width:760px;margin:0 auto;padding:120px 16px 80px;position:relative;z-index:1}
-  .brief h2{font-size:22px;margin:28px 0 8px}
-  .q{background:rgba(255,255,255,.55);border-radius:18px;padding:12px 14px;margin:8px 0;backdrop-filter:blur(10px)}
-  .q b{display:block;font-size:13px;opacity:.7;font-weight:600;margin-bottom:4px}
-  .q p{margin:4px 0;white-space:pre-line;font-size:15px;line-height:1.45}
+  .brief{max-width:880px;margin:0 auto;padding:120px 16px 80px;position:relative;z-index:1}
+  .hero-b{padding:30px 4px 6px}
+  .hero-b h1{margin:0;font:850 clamp(44px,12vw,84px)/.95 var(--font);letter-spacing:-.04em;text-wrap:balance}
+  .hero-b p{margin:16px 0 0;font:700 clamp(22px,5.6vw,28px)/1.2 var(--font)}
+  .meta{font-size:16px;line-height:1.5;opacity:.75;margin:14px 4px 0}
+  .secnav{position:sticky;top:136px;z-index:4;display:flex;gap:6px;overflow-x:auto;padding:6px;margin:18px 0 0;border-radius:999px;background:rgba(255,255,255,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);scrollbar-width:none}
+  .secnav::-webkit-scrollbar{display:none}
+  .secnav a{flex:none;text-decoration:none;color:inherit;font:650 15px/1 var(--font);padding:11px 14px;border-radius:999px;white-space:nowrap}
+  .secnav a:hover,.secnav a:focus-visible{background:rgba(255,255,255,.9)}
+  .secnav a[aria-current="true"]{background:var(--ink);color:#fff}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  .sec{--h:28;margin-top:28px;background:rgba(255,255,255,.5);border-radius:28px;overflow:hidden;box-shadow:0 10px 30px -18px rgba(60,30,10,.4);scroll-margin-top:70px}
+  .sec::before{content:"";display:block;height:6px;background:linear-gradient(90deg,hsl(var(--h) 75% 62%),hsl(var(--h) 70% 86%))}
+  .sec-in{padding:18px 18px 22px}
+  .sec h2{display:inline-flex;align-items:center;gap:12px;margin:4px 0 16px;padding:8px 18px 8px 8px;border-radius:999px;background:hsl(var(--h) 80% 92%);font:850 clamp(36px,9vw,44px)/1.1 var(--font);letter-spacing:-.03em;color:hsl(var(--h) 45% 24%)}
+  .secnum{flex:none;font:700 15px/1 var(--mono);padding:10px 12px;border-radius:999px;background:hsl(var(--h) 60% 40%);color:#fff}
+  .qs{display:grid;grid-template-columns:1fr;gap:12px}
+  .q.split{background:none;box-shadow:none;padding:6px 2px}
+  .pp{display:grid;grid-template-columns:1fr;gap:12px}
+  @media (min-width:760px){.pp{grid-template-columns:1fr 1fr}}
+  .pc{border-radius:20px;padding:16px 18px}
+  .pc.vic{background:hsl(350 75% 94%);box-shadow:inset 4px 0 0 hsl(350 60% 62%)}
+  .pc.nik{background:hsl(205 70% 93%);box-shadow:inset 4px 0 0 hsl(205 55% 58%)}
+  .q .pc > b{display:flex;align-items:center;gap:10px;font:800 28px/1.1 var(--font);letter-spacing:-.02em;margin:-2px 0 10px;color:hsl(var(--c) 45% 26%)}
+  .q .pc > b::before{content:"";flex:none;width:10px;height:30px;border-radius:6px;background:hsl(var(--c) 65% 60%)}
+  .pc.vic{--c:350 70% 55%}
+  .pc.nik{--c:205 60% 48%}
+  .pc p{margin:4px 0;white-space:pre-line;font-size:20px;line-height:1.5}
+  .q{background:rgba(255,255,255,.72);border-radius:20px;padding:16px 18px;box-shadow:inset 4px 0 0 hsl(var(--h) 70% 62%)}
+  .q b{display:block;font:650 16px/1.3 var(--font);opacity:.78;margin-bottom:6px}
+  .q p{margin:4px 0;white-space:pre-line;font-size:20px;line-height:1.5}
   .q p.empty{opacity:.55}
-  .meta{font-size:13px;opacity:.7}
+  .q.short{display:flex;flex-direction:column;justify-content:space-between;gap:10px;background:hsl(var(--h) 70% 95% / .9)}
+  .q.short b{font:600 13px/1.3 var(--mono);opacity:.7;margin:0}
+  .q.short p{font-size:26px;line-height:1.25;font-weight:700;letter-spacing:-.015em}
+  .q p strong{display:block;font:700 13px/1.3 var(--mono);color:hsl(var(--h) 45% 32%);margin-top:6px}
+  .ans .rest[hidden]{display:none}
+  .more{margin-top:8px;border:0;cursor:pointer;background:hsl(var(--h) 80% 92%);color:hsl(var(--h) 45% 24%);font:650 15px/1 var(--font);padding:10px 14px;border-radius:999px}
+  .qbadge{display:inline-block;margin:0 4px;padding:3px 9px;border-radius:999px;background:#ffe27a;color:#5a4300;font:700 13px/1.2 var(--font);box-shadow:inset 0 0 0 1px rgba(120,90,0,.25)}
   a.tab{text-decoration:none;color:inherit;display:inline-flex;align-items:center;position:relative;z-index:1}
 </style>
 </head>
@@ -249,27 +282,59 @@ main { max-width: 1240px; margin: 0 auto; padding: 0 var(--pad); }
   <nav class="tabs" id="tabs" aria-label="Шаги"><i class="thumb" aria-hidden="true"></i><a class="tab" href="brief.html" aria-current="true">1 · Бриф</a><a class="tab" href="index.html">2 · Программа</a></nav>
 </header>
 <main class="brief" id="main">
+  <section class="hero-b" aria-label="Заголовок">
+    <h1>Виктория и Никита</h1>
+    <p>Бриф · 7 ноября 2026</p>
+  </section>
   <p class="meta">Шаг 1 · ответы пары дословно, как пришли на Google Диск. Пустых полей нет. Пометки «уточнить» — только то, что пара сама оставила с «?».</p>
+  <nav class="secnav" id="secnav" aria-label="Разделы брифа"></nav>
   <div id="content"></div>
 </main>
 <script>
 (async () => {
   const text = await (await fetch("brief-text.md")).text();
   const out = document.getElementById('content');
-  let section = null;
-  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  let card = null;
-  const lines = text.split('\n');
-  for (const raw of lines) {
+  const nav = document.getElementById('secnav');
+  const HUES = [285, 22, 46, 350, 205, 150, 95];
+  const LONG = 400;
+  let sec = null, grid = null, card = null, n = 0;
+  // «(?)» и слово «уточнить» — жёлтые бейджи
+  const withBadges = (p, t) => {
+    t.split(/(\(\?\)|уточнить)/i).forEach(part => {
+      if (!part) return;
+      if (/^\(\?\)$|^уточнить$/i.test(part)) { const b = document.createElement('span'); b.className = 'qbadge'; b.textContent = 'уточнить'; p.appendChild(b); }
+      else p.appendChild(document.createTextNode(part));
+    });
+  };
+  for (const raw of text.split('\n')) {
     const line = raw.trimEnd();
     if (line.startsWith('# ')) continue;
     if (line.startsWith('## ')) {
-      section = document.createElement('h2');
-      section.textContent = line.slice(3);
-      out.appendChild(section);
+      n++;
+      sec = document.createElement('section');
+      sec.className = 'sec';
+      sec.id = 's' + n;
+      sec.style.setProperty('--h', HUES[(n - 1) % HUES.length]);
+      const inner = document.createElement('div');
+      inner.className = 'sec-in';
+      const h = document.createElement('h2');
+      const num = document.createElement('span');
+      num.className = 'secnum';
+      num.textContent = String(n).padStart(2, '0');
+      h.append(num, line.slice(3));
+      grid = document.createElement('div');
+      grid.className = 'qs';
+      inner.append(h, grid);
+      sec.appendChild(inner);
+      out.appendChild(sec);
+      const a = document.createElement('a');
+      a.href = '#' + sec.id;
+      a.textContent = String(n).padStart(2, '0') + ' · ' + line.slice(3);
+      nav.appendChild(a);
       card = null;
       continue;
     }
+    const parent = grid || out;
     if (!line.trim()) { card = null; continue; }
     const m = line.match(/^\*\*(.+?)\*\*\s*(.*)$/);
     if (m) {
@@ -278,10 +343,10 @@ main { max-width: 1240px; margin: 0 auto; padding: 0 var(--pad); }
       const b = document.createElement('b');
       b.textContent = m[1];
       card.appendChild(b);
-      out.appendChild(card);
+      parent.appendChild(card);
       if (m[2]) {
         const p = document.createElement('p');
-        p.textContent = m[2];
+        withBadges(p, m[2]);
         card.appendChild(p);
       }
       continue;
@@ -289,12 +354,67 @@ main { max-width: 1240px; margin: 0 auto; padding: 0 var(--pad); }
     if (!card) {
       card = document.createElement('div');
       card.className = 'q';
-      out.appendChild(card);
+      parent.appendChild(card);
     }
     const p = document.createElement('p');
-    p.textContent = line.replace(/^- /, '• ');
+    // «- Виктория: …» — имя отвечающего подписью над ответом
+    const who = line.match(/^- ([^:]{2,24}):\s*(.*)$/);
+    if (who) {
+      const s = document.createElement('strong');
+      s.textContent = who[1];
+      p.appendChild(s);
+      withBadges(p, who[2]);
+    } else withBadges(p, line.replace(/^- /, '• '));
     card.appendChild(p);
   }
+  // ответы по людям: «• Виктория: …» и «• Никита: …» — две карточки рядом; общий ответ — одна карточка на всю ширину
+  const PEOPLE = ['Виктория', 'Никита'];
+  // ответы по людям: строка «- Имя: …» (имя в <strong>) — две карточки рядом; общий ответ — одна карточка на всю ширину
+  const who = p => { const s0 = p.querySelector(':scope > strong'); return s0 && PEOPLE.includes(s0.textContent) ? s0.textContent : null; };
+  document.querySelectorAll('.q').forEach(c => {
+    const ps = [...c.querySelectorAll(':scope > p')];
+    if (!ps.some(p => who(p))) return;
+    const grid = document.createElement('div');
+    grid.className = 'pp';
+    PEOPLE.forEach(nm => {
+      const items = ps.filter(p => who(p) === nm);
+      if (!items.length) return;
+      const pc = document.createElement('div');
+      pc.className = 'pc ' + (nm === 'Виктория' ? 'vic' : 'nik');
+      const lab = document.createElement('b');
+      lab.textContent = nm;
+      pc.appendChild(lab);
+      items.forEach(p => { p.querySelector(':scope > strong').remove(); pc.appendChild(p); });
+      grid.appendChild(pc);
+    });
+    c.classList.add('split');
+    c.appendChild(grid);
+  });
+  // длинные ответы: полный текст на месте, видна часть, остальное — по кнопке (в каждой карточке отдельно)
+  document.querySelectorAll('.q:not(.split), .pc').forEach(c => {
+    const ps = [...c.querySelectorAll(':scope > p')];
+    const len = ps.reduce((k, p) => k + p.textContent.length, 0);
+    if (len > LONG) {
+      const wrap = document.createElement('div');
+      wrap.className = 'ans clamp';
+      ps.forEach(p => wrap.appendChild(p));
+      c.appendChild(wrap);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'more';
+      btn.textContent = 'Читать полностью';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.onclick = () => {
+        const open = wrap.classList.toggle('open');
+        wrap.classList.toggle('clamp', !open);
+        btn.textContent = open ? 'Свернуть' : 'Читать полностью';
+        btn.setAttribute('aria-expanded', String(open));
+      };
+      c.appendChild(btn);
+    } else if (c.classList.contains('q') && ps.length === 1 && len <= 60) {
+      c.classList.add('short');
+    }
+  });
 })();
 </script>
 
