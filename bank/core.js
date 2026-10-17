@@ -343,7 +343,27 @@
   function toText() {
     const g = picks(), t = totals(), n = pairNames();
     const line = (r, arr) => arr.length ? LABEL[r] + " (" + arr.length + (r === "yes" ? ", ≈ " + t.minutes + " мин" : "") + "): " + arr.map(x => x.o.title + (x.c ? " (" + x.c + ")" : "")).join("; ") : "";
-    return ["ПРОГРАММА ВЕЧЕРА · " + n.join(" и "), "Пробный показ — ничего не отправлено", "", line("yes", g.yes), line("maybe", g.maybe), line("no", g.no), S.a.wish ? "\nПожелание: " + S.a.wish : ""].filter(x => x !== "").join("\n");
+    return ["ПРОГРАММА ВЕЧЕРА · " + n.join(" и "), "", line("yes", g.yes), line("maybe", g.maybe), line("no", g.no), S.a.wish ? "\nПожелание: " + S.a.wish : ""].filter(x => x !== "").join("\n");
+  }
+  // Отправка программы: тот же приёмник, что у шага 1 (Apps Script → Google Документ + письмо владельцу).
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbwNkv6WGTWhvZ4d1KlBdtSTpKG4gTEg9cc9Y7oAeLlBt57euDRGjrtFSZsq6Its90qmqA/exec";
+  async function submitProgram(opt) {
+    const btn = document.querySelector(".cr-done");
+    if (btn) { btn.disabled = true; btn.textContent = "Отправляю…"; }
+    const g = picks(), n = pairNames();
+    const items = [["Хотим", g.yes], ["Можно", g.maybe], ["Не наше", g.no]]
+      .map(([q, arr]) => ({ q, a: arr.map(x => x.o.title + (x.c ? " (" + x.c + ")" : "")).join("; ") }))
+      .filter(x => x.a);
+    if (S.a.wish) items.push({ q: "Пожелание", a: S.a.wish });
+    const payload = { app: "wedding-constructor", version: "0.1", kind: "program", couple: couple, names: S.a.names || null,
+      sentAt: new Date().toISOString(), picks: g.yes.map(x => ({ phase: x.st.title, id: x.o.id, title: x.o.title, r: "yes", c: x.c || "" })),
+      doc: [{ section: "Программа вечера · " + n.join(" и "), items }], text: toText() };
+    S.delivered = false;
+    try {
+      const r = await fetch(ENDPOINT, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload), redirect: "follow" });
+      S.delivered = r.ok && (await r.json()).ok === true;
+    } catch (e) { S.delivered = false; }
+    S.sent = true; save(); opt.rebuild && opt.rebuild();
   }
   // buildSummary(body, opt): общая разметка итога; оформляет каждая концепция своим CSS. opt.close — закрыть шторку/экран.
   function buildSummary(body, opt) {
@@ -372,14 +392,14 @@
       h("div", { class: "cr-pair" }, nameIn("b", "Невеста"), nameIn("g", "Жених")),
       h("div", { class: "cr-lbl" }, wishF ? wishF.label : "Что ещё добавить в программу?"),
       wishF && wishF.hint ? h("p", { class: "cr-hint" }, wishF.hint) : null, wish, msg,
-      h("button", { class: "cr-done", type: "button", onclick: () => { S.sent = true; save(); opt.rebuild && opt.rebuild(); } }, "Отправить Григорию"),
+      h("button", { class: "cr-done", type: "button", onclick: () => submitProgram(opt) }, "Отправить Григорию"),
       h("div", { class: "cr-acts" }, h("button", { class: "cr-ghost", type: "button", onclick: copy }, "Скопировать текстом"), h("button", { class: "cr-ghost", type: "button", "data-act": "marks", onclick: copyMarks }, "Скопировать мои отметки"), h("button", { class: "cr-ghost", type: "button", "data-act": "share-marks", onclick: shareMarks }, "Поделиться отметками"))));
     requestAnimationFrame(() => grow(wish));
   }
   function buildDone(body, opt) {
     const d = FORM.done;
     body.append(h("div", { class: "cr-sum cr-sent" },
-      h("h2", { id: "cr-title" }, d.title), h("p", null, d.text), h("p", { class: "cr-kick" }, "Пробный показ: ничего не отправлено"),
+      h("h2", { id: "cr-title" }, d.title), h("p", null, d.text), h("p", { class: "cr-kick" }, S.delivered ? "Отправлено Григорию: документ и письмо на почту" : "Не дошло до приёмника — скопируйте текст и отправьте в чат"),
       h("p", { class: "cr-msg", id: "cr-msg", "aria-live": "polite" }),
       h("div", { class: "cr-acts" },
         h("button", { class: "cr-ghost", type: "button", onclick: copy }, "Скопировать текстом"),
