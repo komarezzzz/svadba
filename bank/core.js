@@ -355,7 +355,7 @@
       .map(([q, arr]) => ({ q, a: arr.map(x => x.o.title + (x.c ? " (" + x.c + ")" : "")).join("; ") }))
       .filter(x => x.a);
     if (S.a.wish) items.push({ q: "Пожелание", a: S.a.wish });
-    const payload = { app: "wedding-constructor", version: "0.1", kind: "program", couple: couple, names: S.a.names || null,
+    const payload = { app: "wedding-constructor", version: "0.1", kind: "program", couple: couple, names: S.a.names || null, answers: S.a,
       sentAt: new Date().toISOString(), picks: g.yes.map(x => ({ phase: x.st.title, id: x.o.id, title: x.o.title, r: "yes", c: x.c || "" })),
       doc: [{ section: "Программа вечера · " + n.join(" и "), items }], text: toText() };
     S.delivered = false;
