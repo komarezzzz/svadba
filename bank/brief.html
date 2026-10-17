@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Шаг 1 · Бриф · Виктория и Никита</title>
+<link rel="stylesheet" href="core.css">
+<link rel="stylesheet" href="glass.css">
+<style>
+  .brief{max-width:760px;margin:0 auto;padding:120px 16px 80px}
+  .top .top-row{gap:8px}
+  .brief h2{font-size:22px;margin:28px 0 8px}
+  .q{background:rgba(255,255,255,.55);border-radius:18px;padding:12px 14px;margin:8px 0;backdrop-filter:blur(10px)}
+  .q b{display:block;font-size:13px;opacity:.7;font-weight:600;margin-bottom:4px}
+  .q p{margin:4px 0;white-space:pre-line;font-size:15px;line-height:1.45}
+  .q p.empty{opacity:.55}
+  .tabs a{padding:10px 14px;border-radius:999px;text-decoration:none;color:inherit;display:inline-block}
+  .tabs a.on{background:rgba(255,255,255,.8);font-weight:600}
+  .meta{font-size:13px;opacity:.7}
+</style>
+</head>
+<body>
+<header class="top lg">
+  <div class="top-row"><div class="who"><b>Ваш вечер</b><span>Виктория и Никита</span></div></div>
+  <nav class="tabs" aria-label="Шаги">
+    <a class="on" href="brief.html">1 · Бриф</a>
+    <a href="index.html">2 · Программа</a>
+  </nav>
+</header>
+<main class="brief" id="main">
+  <p class="meta">Шаг 1 · ответы пары дословно, как пришли на Google Диск. Пустых полей нет. Пометки «уточнить» — только то, что пара сама оставила с «?».</p>
+  <div id="content"></div>
+</main>
+<script>
+(async () => {
+  const text = await (await fetch("brief-text.md")).text();
+  const out = document.getElementById('content');
+  let section = null;
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  let card = null;
+  const lines = text.split('\n');
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    if (line.startsWith('# ')) continue;
+    if (line.startsWith('## ')) {
+      section = document.createElement('h2');
+      section.textContent = line.slice(3);
+      out.appendChild(section);
+      card = null;
+      continue;
+    }
+    if (!line.trim()) { card = null; continue; }
+    const m = line.match(/^\*\*(.+?)\*\*\s*(.*)$/);
+    if (m) {
+      card = document.createElement('div');
+      card.className = 'q';
+      const b = document.createElement('b');
+      b.textContent = m[1];
+      card.appendChild(b);
+      out.appendChild(card);
+      if (m[2]) {
+        const p = document.createElement('p');
+        p.textContent = m[2];
+        card.appendChild(p);
+      }
+      continue;
+    }
+    if (!card) {
+      card = document.createElement('div');
+      card.className = 'q';
+      out.appendChild(card);
+    }
+    const p = document.createElement('p');
+    p.textContent = line.replace(/^- /, '• ');
+    card.appendChild(p);
+  }
+})();
+</script>
+</body>
+</html>
