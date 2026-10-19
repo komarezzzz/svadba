@@ -457,9 +457,11 @@ body:not(.wide) .row.brk .s{white-space:nowrap}
   var tailC=document.getElementById("tailc"),TAIL={on:false,ready:false,asked:false,src:"",fr:[],n:60,dir:"",pos:-1,op:-1,A:.89,B:.985,hold:false};
   function tailWant(){return window.innerWidth>=window.innerHeight*1.25?"f16":"f9"}
   // кадры: вертикально 540×960 (final/tail9), горизонтально 960×540 (final/tail16); картинки грузятся везде, ничего не стартует само
+  // Видео-хвост (кадры final/tail9, tail16) отключён 19.10: не совпадал со сценой и был плохого качества; падение листа делает код
+  var TAIL_VIDEO=false;
   function tailLoad(){
     var want=tailWant();
-    if(!tailC||TAIL.src===want)return;
+    if(!TAIL_VIDEO||!tailC||TAIL.src===want)return;
     TAIL.asked=true;TAIL.ready=false;TAIL.on=false;TAIL.src=want;TAIL.fr=[];TAIL.pos=-1;
     var land=want==="f16";tailC.width=land?768:432;tailC.height=land?432:768;TAIL.dir=land?"final/tail16/f":"final/tail9/f";
     var left=TAIL.n,k;
