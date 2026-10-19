@@ -1,0 +1,1059 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2a1c10">
+<meta name="robots" content="noindex, nofollow">
+<meta name="format-detection" content="telephone=no">
+<title>Тайминг. Виктория и Никита</title>
+<style>
+@font-face{font-family:"Kalissa";src:url("fonts/kalissa.otf") format("opentype");font-display:swap}
+@font-face{font-family:"FinH";src:url("fonts/finlandica.woff2") format("woff2");font-weight:100 900;font-display:swap}
+@font-face{font-family:"AleksandraC";src:url("fonts/AleksandraC.otf") format("opentype");font-display:swap}
+:root{--W:360px;--hdr:64px;--pencil:#2f2d2a;--soft:#57524b;--rust:#8a5a2b;--paper:#f6efe0;--ease-out:cubic-bezier(.23,1,.32,1)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#2a1c10;-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior:none;scroll-padding-top:calc(var(--hdr) + 12px)}
+/* overflow-x на body уходит во viewport, sticky не ломается */
+body{font-family:"AleksandraC",Georgia,serif;color:var(--pencil);background:#2a1c10;overflow-x:hidden;overflow-x:clip;overscroll-behavior:none}
+#svh{position:fixed;left:0;top:0;width:0;height:100vh;height:100svh;visibility:hidden;pointer-events:none}
+.hidden,[hidden]{display:none!important}
+/* общая шапка шагов (steps-header.js): над столом и плашкой, под шторкой */
+body>header.sh{z-index:16}
+
+.stage{position:relative;height:1100vh}
+.view{position:sticky;top:0;height:100vh;height:100dvh;overflow:hidden;overflow:clip;isolation:isolate}
+body.rm .stage{height:auto}
+/* интро-видео: камера опускается от окна к столу; скролл ведёт кадры; поверх всего, кроме шапки */
+#kitchen{position:absolute;z-index:0;left:0;top:0;max-width:none;pointer-events:none;display:none}
+#haze{position:absolute;z-index:4;left:0;right:0;pointer-events:none;display:none;background:linear-gradient(rgba(236,228,214,0),rgba(236,228,214,.9) 42%,rgba(236,228,214,.9) 55%,rgba(236,228,214,0))}
+body.rm #kitchen,body.rm #haze,body.rm #hello{display:none!important}
+/* шапка-приветствие: слова проступают и уезжают вверх по скроллу интро (AleksandraC — утверждённый шрифт студии, Finlandica — подпись) */
+#hello{position:absolute;z-index:6;left:0;right:0;top:45%;padding:0 3vw;text-align:center;pointer-events:none;display:none;color:#3a2616;text-shadow:0 .02em .22em rgba(255,246,230,.5)}
+#hello .l1{display:block;white-space:nowrap;font-family:"Kalissa","AleksandraC",Georgia,serif;font-size:clamp(46px,14.2vw,280px);line-height:1;letter-spacing:.005em;transform:rotate(-3deg);transform-origin:50% 60%}
+#hello .l2{display:block;margin:1.5em auto 0;padding-left:5vw;max-width:min(30em,92vw);text-wrap:balance;font-family:"FinH","AleksandraC",Georgia,serif;font-weight:700;font-size:clamp(17px,3vw,44px);line-height:1.32;letter-spacing:.01em;color:#2a1a0c;text-shadow:0 0 .35em rgba(255,244,222,.75),0 .03em .12em rgba(255,246,230,.6)}
+/* запас вокруг слова: хвосты рукописного шрифта выходят за рамку слова, на iPhone слой слова их обрезал (последняя «о»); padding+минус margin оставляют положение прежним */
+#hello .w{display:inline-block;padding:.12em .34em .22em .34em;margin:-.12em -.2em -.22em -.2em}
+#hello .w{animation:helloW .95s cubic-bezier(.2,.8,.2,1) var(--d,0ms) backwards}
+@keyframes helloW{from{opacity:0;transform:translateY(46px) scale(.97)}}
+@media (prefers-reduced-motion:reduce){#hello .w{animation:none}}
+/* hello-up: на вертикальном экране надпись стоит выше стола, на светлом окне */
+@media (max-aspect-ratio:1/1){#hello{top:22%}}
+/* кнопка «наверх» в самом конце: сначала тихая, через пару секунд начинает мигать стрелкой */
+.totop{position:fixed;z-index:17;right:calc(14px + env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;border:0;padding:0;display:grid;place-items:center;cursor:pointer;
+  background:rgba(51,50,47,.92);color:#f6efe0;box-shadow:0 6px 18px rgba(30,15,5,.45),inset 0 0 0 1px rgba(255,255,255,.16);opacity:0;visibility:hidden;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease,visibility 0s .5s;-webkit-tap-highlight-color:transparent}
+.totop svg{width:26px;height:26px;display:block}
+.totop.on{visibility:visible;opacity:.22;transform:none;transition:opacity .5s ease,transform .5s ease;animation:totopBlink 1.5s ease-in-out 2.2s infinite}
+.totop:focus-visible{outline:2px solid #f6efe0;outline-offset:3px}
+@keyframes totopBlink{0%,100%{opacity:.22;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
+@media (prefers-reduced-motion:reduce){.totop.on{animation:none;opacity:.9}}
+body.rm .view{position:relative}
+
+/* пол (финал): картинка из final/, пока её нет — тёплые доски */
+#floor{position:absolute;inset:0;z-index:0;background-color:#b98f5c;background-position:center;
+  background-image:repeating-linear-gradient(90deg,rgba(48,28,12,.38) 0 2px,transparent 2px 22vmin),
+    repeating-linear-gradient(90deg,rgba(255,236,206,.05) 0 7vmin,rgba(0,0,0,.05) 7vmin 15vmin,transparent 15vmin 22vmin),
+    repeating-linear-gradient(0deg,rgba(255,240,220,.035) 0 1px,transparent 1px 5px)}
+#floor.img{background-size:cover;background-repeat:no-repeat}
+#floor.intro{background-image:none!important;background-color:#c9a06b}
+/* коврик (финал): лежит на полу под упавшим листом, проявляется, когда стол уезжает */
+#rug{position:absolute;z-index:0;left:0;top:0;opacity:0;pointer-events:none;transform-origin:50% 50%;
+  filter:drop-shadow(0 calc(var(--W,1000px)*.012) calc(var(--W,1000px)*.03) rgba(20,10,2,.4))}
+/* предметы пола (тапочки, миска, мышка, носок): лежат вокруг коврика, проявляются вместе с ним; нет файла — предмета нет */
+#pol{position:absolute;inset:0;z-index:0;opacity:0;pointer-events:none}
+#pol img{position:absolute;display:block;height:auto;max-width:none;transform-origin:50% 50%;filter:drop-shadow(0 2px 3px rgba(30,14,4,.5))}
+
+/* мир камеры: стол, вещи, снимки */
+.layer{position:absolute;left:0;top:0;transform-origin:0 0}
+#world{z-index:1}
+/* вещи на узком экране: над листом, на его полях (рядом с текстом не ставятся); камера та же, что у листа */
+#objTop{z-index:3;pointer-events:none}
+/* will-change только пока камера меняет масштаб; на чтении снимается, чтобы текст и снимки перерисовались резко */
+.layer.wc{will-change:transform}
+#itable{position:absolute;left:0;top:0;display:none;background:#c9a06b url("stol-oak-tile.webp") repeat;box-shadow:0 -14px 22px -4px rgba(34,20,8,.55),inset 0 4px 0 rgba(255,238,205,.28)}
+#tableW{position:absolute;left:0;top:0;background:#c9a06b url("stol-oak-tile.webp") repeat}
+.bn{margin:calc(var(--W)*.035) 0 calc(var(--W)*.012);font-size:max(calc(var(--W)*.034),.8rem);letter-spacing:.14em;text-transform:uppercase;color:var(--soft)}
+.bn::after{content:"";display:block;height:0;border-top:1px solid rgba(87,82,75,calc(.35*var(--rv,1)));margin-top:.25em}
+.obj{position:absolute;left:0;top:0;max-width:none;height:auto;pointer-events:none;user-select:none;
+  filter:drop-shadow(calc(var(--W)*.012*var(--fx,1)) calc(var(--W)*.02) calc(var(--W)*.02) rgba(40,20,5,.45))}
+.photo{position:absolute;left:0;top:0;display:none;background:#fbf8f1;pointer-events:none;
+  box-shadow:calc(var(--W)*.006) calc(var(--W)*.014) calc(var(--W)*.03) rgba(40,20,5,.45)}
+.photo img{display:block;width:100%;height:auto}
+.photo.onp{transition:opacity .9s ease-out}
+body.wide .photo{display:block}
+
+#vignette{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse 80% 75% at 50% 45%,transparent 45%,rgba(30,14,4,.45))}
+body.rm #vignette{display:none}
+
+/* лист */
+#sheetWrap{position:absolute;inset:0;z-index:3;transform-origin:50% 50%}
+#nudge{position:absolute;inset:0;transform-origin:50% 50%}
+.sheet{position:absolute;left:calc(var(--W)/-2);top:0;width:var(--W)}
+.sheet.nopaper{background:#f3e8cf;box-shadow:0 calc(var(--W)*.02) calc(var(--W)*.05) rgba(30,15,4,.5)}
+.sheet .tl{position:absolute;max-width:none;pointer-events:none;user-select:none}
+.sheet .midtile{position:absolute;background-repeat:repeat-y;pointer-events:none}
+.content{position:relative;padding:calc(var(--W)*.2) calc(var(--W)*.12) calc(var(--W)*.3)}
+h1{font-weight:400;font-size:calc(var(--W)*.1);line-height:1;margin-bottom:calc(var(--W)*.025);transform:rotate(-1.2deg);transform-origin:0 50%;white-space:nowrap}
+.sub{font-size:max(calc(var(--W)*.038),.8rem);color:var(--soft);margin-bottom:calc(var(--W)*.05)}
+.legend{display:flex;flex-wrap:wrap;gap:.3em 1.1em;margin:0 0 calc(var(--W)*.05);font-size:max(calc(var(--W)*.032),.78rem);color:var(--soft)}
+.legend>span{display:inline-flex;align-items:center;gap:.35em}
+.row{display:grid;grid-template-columns:minmax(calc(var(--W)*.25),max-content) minmax(0,1fr);column-gap:calc(var(--W)*.03);align-items:baseline;
+  padding:calc(var(--W)*.014) 0;border-bottom:1px dashed rgba(70,65,58,.3)}
+.row .t{font-size:max(calc(var(--W)*.034),.78rem);color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
+.row .s{font-size:max(calc(var(--W)*.042),.95rem);line-height:1.18;overflow-wrap:anywhere}
+.row .n{display:block;font-size:max(calc(var(--W)*.03),.76rem);color:var(--soft);line-height:1.25;margin-top:calc(var(--W)*.005)}
+.row{border-bottom-color:rgba(70,65,58,calc(.3*var(--rv,1)))}
+.row.brk{padding:calc(var(--W)*.006) 0}
+.row.brk .s{font-size:max(calc(var(--W)*.032),.8rem);color:var(--soft);font-style:italic}
+.row.blk{cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:2px}
+/* иконка блока висит слева от названия; строки названия и описания выровнены по ней */
+.row.blk .s{position:relative;padding-left:1.5em}
+.row.blk.icw .s{padding-left:1.7em}
+.ic{position:absolute;left:0;top:.02em;width:1.15em;height:1.15em;pointer-events:none;transform:rotate(-3deg)}
+.ic.w{width:1.35em}
+.ic svg{display:block;width:100%;height:100%;overflow:visible;fill:none;stroke:var(--pencil);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+/* маркер под названием читаемого блока */
+.ttl{background:linear-gradient(rgba(255,204,80,.62),rgba(255,204,80,.62)) 0 88%/0 38% no-repeat;-webkit-box-decoration-break:clone;box-decoration-break:clone;transition:background-size .3s ease-out}
+.row.blk.hl .ttl{background-size:100% 38%}
+@media (hover:hover){.row.blk:hover .ttl{background-size:100% 38%}}
+/* скетчи внутри листа (узкий экран): боковые картинки разного размера, строки тайминга идут подряд и обтекают их.
+   Без масок и clip-path (рисунок не режется); появление — плавный fade со сдвигом ≤12px, класс .in ставится один раз и не снимается */
+.content{display:flow-root}
+.bn{display:flow-root}
+figure.sk{--r:2deg;--sw:40;--ks:1;--mo:-.04;float:right;clear:both;position:relative;width:calc(var(--sw)*var(--ks)*1%);
+  margin:calc(var(--W)*.012) calc(var(--W)*var(--mo)) calc(var(--W)*.025) calc(var(--W)*.035);
+  opacity:0;transform:rotate(var(--r)) translateY(10px) scale(.98);
+  transition:opacity .55s var(--ease-out),transform .55s var(--ease-out)}
+figure.sk.l{float:left;margin:calc(var(--W)*.012) calc(var(--W)*.035) calc(var(--W)*.025) calc(var(--W)*var(--mo))}
+figure.sk.in{opacity:1;transform:rotate(var(--r))}
+/* текст и рисунки на бумаге проявляются один раз, когда интро закончилось (класс .ink на .content); по прокрутке больше не пересчитываются */
+.content>*{opacity:0;transition:opacity .9s ease-out}
+.content.ink>*{opacity:1}
+.content.ink>figure.sk{transform:rotate(var(--r))}
+body.rm .content>*{opacity:1;transition:none}
+figure.sk img{display:block;width:100%;height:auto;mix-blend-mode:multiply}
+body.rm figure.sk{opacity:1;transform:rotate(var(--r));transition:none}
+body.wide figure.sk{display:none}
+/* телефон: часть рисунков ушла снимками на стол; крупные стоят по центру листа, у первого танца низ растворяется (без обрезанных ног) */
+body:not(.wide) figure.sk.tbl{display:none}
+body:not(.wide) .photo.tbl{display:block;padding:calc(var(--W)*.012) calc(var(--W)*.012) calc(var(--W)*.04)}
+figure.sk.big{float:none;clear:both;margin-left:auto;margin-right:auto;margin-top:calc(var(--W)*.02)}
+figure.sk.fade img{-webkit-mask-image:linear-gradient(#000 58%,transparent 94%);mask-image:linear-gradient(#000 58%,transparent 94%)}
+
+/* пометки от руки поверх текста (телефон, как на листе-полотне): цветное время, волнистое подчёркивание названий разными чернилами, обведённая длительность, красные стрелки */
+body:not(.wide) .row .t{color:#8a5a2b;font-style:italic}
+body:not(.wide) .row.blk .ttl{font-weight:600;text-decoration-line:underline;text-decoration-style:wavy;text-decoration-thickness:1.4px;text-underline-offset:.22em;text-decoration-skip-ink:none}
+body:not(.wide) .row.mk0 .ttl{text-decoration-color:rgba(45,95,168,.8)}
+body:not(.wide) .row.mk1 .ttl{text-decoration-color:rgba(165,55,38,.8)}
+body:not(.wide) .row.mk2 .ttl{text-decoration-color:rgba(61,122,74,.8)}
+body:not(.wide) .row.mk3 .ttl{text-decoration-color:rgba(138,90,43,.9)}
+body:not(.wide) .row .mins{position:relative;display:inline-block;margin:.45em 0 .25em .15em;padding:.02em .6em;color:#9c3b28;font-style:italic;font-weight:600}
+body:not(.wide) .row .mins::after{content:"";position:absolute;inset:-.1em -.05em;border:1.6px solid rgba(165,55,38,.78);border-radius:52% 48% 55% 45%/58% 50% 50% 46%;transform:rotate(-2.4deg);pointer-events:none}
+body:not(.wide) .row.mk1 .mins::after,body:not(.wide) .row.mk3 .mins::after{border-radius:46% 54% 48% 52%/52% 56% 44% 50%;transform:rotate(1.8deg)}
+body:not(.wide) .row .dsc{display:block;color:#3f3b35}
+body:not(.wide) .row .dsc .ar{font-style:normal;font-weight:700;color:#b3402e}
+body:not(.wide) .row.brk .s{color:#5b7a63}
+
+/* ЛИСТ-ПОЛОТНО (телефон): время зелёное, подчёркивания: зелёное ушло на коричневый (бывший цвет времени); между блоками пунктир фломастером */
+body:not(.wide) .row .t{color:#2f6f3f;font-style:italic;font-weight:600}
+body:not(.wide) .row.mk2 .ttl{text-decoration-color:rgba(138,90,43,.9)}
+body:not(.wide) .row.mk3 .ttl{text-decoration-color:rgba(176,122,26,.9)}
+body:not(.wide) .row.brk .s,body:not(.wide) .row.brk .t{color:#2f6f3f}
+body:not(.wide) .row.brk .s{display:flex;align-items:center;gap:.5em}
+body:not(.wide) .row.brk .s{font-size:max(calc(var(--W)*.036),.72rem)}
+.dnc svg{width:2.2em}
+.dnc{display:inline-block;flex:none}.dnc svg{display:block;width:2.6em;height:1.25em;overflow:visible}
+body:not(.wide) .bn{position:relative;margin-top:calc(var(--W)*.09);padding-top:calc(var(--W)*.035)}
+body:not(.wide) .bn::before{content:"";position:absolute;left:-1%;right:-1%;top:0;height:0;border-top:3.5px dashed rgba(38,92,158,.55);border-radius:3px;transform:rotate(-.5deg);opacity:calc(var(--rv,1))}
+body:not(.wide) .row.blk{margin-bottom:calc(var(--W)*.03)}
+body:not(.wide) .row.brk{margin-top:calc(var(--W)*.02);margin-bottom:calc(var(--W)*.02)}
+/* три этапа музыкальной игры: фишки с рукописными цифрами, вразброс и под наклоном */
+.stg{display:flex;flex-wrap:wrap;gap:calc(var(--W)*.03) calc(var(--W)*.035);margin-top:calc(var(--W)*.03)}
+.stc{display:inline-flex;align-items:center;gap:.45em;padding:.2em .7em .2em .25em;border:1.6px solid rgba(70,65,58,.5);border-radius:999px 999px 999px 999px/60% 60% 60% 60%;background:rgba(255,250,236,.55);font-weight:600;line-height:1.1;white-space:nowrap}
+.stc i{font-style:normal;display:inline-grid;place-items:center;width:1.6em;height:1.6em;border-radius:50%;background:#2f6f3f;color:#f6efe0;font-size:.92em}
+.stc.c0{transform:rotate(-2.2deg)}.stc.c1{transform:rotate(1.6deg) translateX(.8em)}.stc.c2{transform:rotate(-1deg) translateX(.2em)}
+.stc.c1 i{background:#a53726}.stc.c2 i{background:#2d5fa8}
+/* зазор перед блоком: появляется, только если снимкам рядом не хватило места */
+.gap{display:block;height:0}
+@media (max-width:600px),(max-height:500px){
+  .row .t{font-size:max(calc(var(--W)*.04),.78rem)}
+  .row .s{font-size:max(calc(var(--W)*.048),.95rem)}
+  .row .n{font-size:max(calc(var(--W)*.038),.76rem)}
+  .row.brk .s{font-size:max(calc(var(--W)*.04),.8rem)}
+  .sub,.legend{font-size:max(calc(var(--W)*.04),.78rem)}
+}
+/* картинки лежат в листе (всё, кроме самого широкого экрана, где снимки на столе): строки идут подряд обычным потоком и обтекают картинки построчно
+   (не гридом: сетка-блок рядом с поплавком сжимается в щель). Время над названием, иконка — в строке с названием, разделитель — пустой блок, он стоит только рядом с текстом */
+body:not(.wide) .row{display:block;padding:calc(var(--W)*.014) 0 0;border-bottom:0}
+body:not(.wide) .row::after{content:"";display:flow-root;margin-top:calc(var(--W)*.014);border-top:1px dashed rgba(70,65,58,calc(.3*var(--rv,1)))}
+body:not(.wide) .row.brk{padding-top:calc(var(--W)*.006)}
+body:not(.wide) .row.brk::after{margin-top:calc(var(--W)*.006)}
+body:not(.wide) .row .t{display:block;white-space:nowrap;margin-bottom:calc(var(--W)*.004)}
+body:not(.wide) .row .s{overflow-wrap:break-word}
+body:not(.wide) .row.blk .s{padding-left:0}
+body:not(.wide) .row.blk.icw .s{padding-left:0}
+body:not(.wide) .ic{position:static;display:inline-block;vertical-align:-.2em;margin-right:.4em}
+body:not(.wide) .row.brk .t,body:not(.wide) .row.brk .s{display:inline}
+body:not(.wide) .row.brk .t{margin-right:.7em}
+body:not(.wide) .row.brk .s{white-space:nowrap}
+/* телефон: картинки меньше и заходят на поля листа */
+@media (max-width:520px){
+  figure.sk{--ks:.92;--mo:-.075}
+}
+/* шапка шагов (steps-header.js): на узком экране цель нажатия «1» и «2» ≥ 40 px, подпись пары не вылезает */
+@media (max-width:520px){
+  body>header.sh nav a:not([aria-current]){min-width:40px;justify-content:center;padding:0 8px}
+  body>header.sh{padding-right:6px}
+}
+
+/* Flow-хвост (горизонтальный экран): видео «стол → пол» поверх сцены, проявляется на кадре p=0,80, в конце уходит и открывает точно такой же финал страницы */
+#tailc{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:3;opacity:0;pointer-events:none;background:#c9a06b}
+/* лапа Коши: основание за нижним краем экрана, пальцы вверх */
+#pawBox{position:absolute;z-index:4;left:0;bottom:0;width:120px;pointer-events:none;opacity:0;
+  transform:translate3d(0,var(--py-up,20%),0);translate:0 26px;transition:opacity .6s ease-out,translate .7s cubic-bezier(.2,.8,.2,1)}
+/* лапа появляется плавно (проявление + короткий подъём на 26 px), дальше стоит на месте внизу и не исчезает между шлепками */
+#pawBox.on{opacity:1;translate:0 0;pointer-events:auto;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+#pawBox.sd{transition:none!important}
+#pawBox.show{opacity:1;translate:0 0;transform:translate3d(0,var(--py-rest,80%),0)}
+#pawBox img{display:block;width:100%;height:auto;-webkit-user-drag:none;filter:drop-shadow(0 -2px 6px rgba(20,10,2,.35))}
+#paw2{position:absolute;left:0;top:0;opacity:0}
+#pawBox.hit #paw2{opacity:1}
+#pawBox.hit #paw{opacity:0}
+
+/* фокус */
+:focus-visible{outline:3px solid var(--rust);outline-offset:2px}
+.row.blk:focus-visible{outline:max(2px,calc(var(--W)*.005)) solid var(--rust);outline-offset:calc(var(--W)*.008);border-radius:4px}
+
+/* кнопки, шторка, плашка */
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border:0;border-radius:12px;background:#33322f;color:#f6efe0;
+  font:inherit;font-size:16px;line-height:1.2;text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.btn.ghost{background:transparent;color:var(--pencil);box-shadow:inset 0 0 0 1.5px #33322f}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:3px solid var(--rust);outline-offset:3px}
+.cscrim{position:fixed;inset:0;z-index:20;background:rgba(30,18,8,.45);opacity:0;visibility:hidden;touch-action:none;transition:opacity .25s,visibility 0s linear .25s}
+.cscrim.on{opacity:1;visibility:visible;transition:opacity .25s}
+.csheet{position:fixed;z-index:21;left:50%;bottom:0;width:min(100%,480px);max-height:88vh;max-height:88svh;overflow:auto;overscroll-behavior:contain;
+  background:#f6efe0;color:var(--pencil);border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(30,18,8,.35);
+  padding:22px max(22px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left));
+  transform:translate(-50%,105%);visibility:hidden;transition:transform .32s cubic-bezier(.2,.8,.2,1),visibility 0s linear .32s}
+.csheet.on{transform:translate(-50%,0);visibility:visible;transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+.csheet:focus{outline:none}
+.csheet .ct{font-size:14px;color:var(--soft);letter-spacing:.02em;padding-right:44px}
+.csheet h2{font-weight:400;font-size:26px;line-height:1.15;margin:6px 0 8px;padding-right:44px}
+.csheet p{font-size:17px;line-height:1.35}
+.csheet .chip{display:inline-block;padding:4px 12px;border:1px solid var(--soft);border-radius:99px;font-size:14px;color:var(--soft)}
+.csheet textarea{display:block;width:100%;min-height:110px;margin-top:12px;padding:10px 12px;border:1px solid #a8997f;border-radius:10px;background:#fffaf0;font:inherit;font-size:16px;color:var(--pencil);resize:vertical}
+.csheet>div>.btn{margin-top:14px}
+.cs-foot{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px}
+.csheet .x{position:absolute;right:8px;top:6px;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:none;font:inherit;font-size:30px;line-height:1;color:var(--soft);cursor:pointer}
+.okbar{position:fixed;z-index:15;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;
+  width:max-content;max-width:calc(100vw - 24px);padding:8px 8px 8px 16px;background:#f6efe0;color:var(--pencil);border-radius:18px;box-shadow:0 6px 22px rgba(30,18,8,.4);font-size:17px;
+  transform:translate(-50%,calc(100% + 40px));visibility:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),visibility 0s linear .35s}
+.okbar.on{transform:translate(-50%,0);visibility:visible;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.okbar.at-l{left:calc(12px + env(safe-area-inset-left));transform:translate(0,calc(100% + 40px))}
+.okbar.at-l.on{transform:none}
+.okbar.at-t{top:calc(var(--hdr) + 8px);bottom:auto;transform:translate(-50%,calc(-100% - 40px - var(--hdr)))}
+.okbar.at-t.on{transform:translate(-50%,0)}
+.okbar .btn{padding:10px 16px}
+#oktext{padding-right:4px}
+
+/* меньше движения: шторка и плашка проявляются на месте, без выезда; лапа и маркер без анимации */
+@media (prefers-reduced-motion:reduce){
+  .csheet{transform:translate(-50%,0);opacity:0;transition:opacity .2s,visibility 0s linear .2s}
+  .csheet.on{opacity:1;transition:opacity .2s}
+  .okbar,.okbar.at-t{transform:translate(-50%,0);opacity:0;transition:opacity .2s,visibility 0s linear .2s}
+  .okbar.at-l{transform:none}
+  .okbar.on{opacity:1;transition:opacity .2s}
+  #pawBox,.ttl{transition:none}
+}
+</style>
+<script src="steps-header.js" defer></script>
+</head>
+<body>
+<div id="svh" aria-hidden="true"></div>
+<div class="stage" id="stage">
+ <div class="view" id="view">
+  <div id="floor"></div>
+  <img id="kitchen" src="kitchen-bg.webp" alt="" aria-hidden="true">
+  <div id="haze" aria-hidden="true"></div>
+  <div id="hello" role="heading" aria-level="1" aria-label="Всё расписано. Седьмое ноября, Петербург. Вот как пройдёт ваш день."><span class="l1" aria-hidden="true"><i class="w">Всё</i><i class="w">расписано</i></span><span class="l2" aria-hidden="true"><i class="w">Седьмое</i><i class="w">ноября,</i><i class="w">Петербург.</i><i class="w">Вот</i><i class="w">как</i><i class="w">пройдёт</i><i class="w">ваш</i><i class="w">день.</i></span></div>
+  <img id="rug" alt="" aria-hidden="true" hidden>
+  <div id="pol" aria-hidden="true"></div>
+  <div class="layer" id="world"><div id="tableW"></div><div id="itable"></div></div>
+  <div id="vignette"></div>
+  <div id="sheetWrap"><div id="nudge"><div class="layer" id="sheetLayer"><div class="sheet" id="sheet"><div id="tiles"></div><main class="content" id="content"></main></div></div></div></div>
+  <div class="layer" id="objTop" aria-hidden="true"></div>
+  <canvas id="tailc" width="540" height="960" aria-hidden="true"></canvas>
+  <div id="pawBox" aria-hidden="true" hidden><img id="paw" alt=""><img id="paw2" alt=""></div>
+ </div>
+</div>
+
+<div class="cscrim" id="cscrim"></div>
+<div class="csheet" id="csheet" role="dialog" aria-modal="true" aria-labelledby="cstitle" tabindex="-1"><button class="x" id="csx" type="button" aria-label="Закрыть">×</button><div id="csbody"></div></div>
+<div class="okbar" id="okbar" role="region" aria-label="Подтверждение тайминга"><span id="oktext">Всё верно?</span><button class="btn" id="okyes" type="button">Да, так</button><button class="btn ghost" id="okfix" type="button">Поправить</button></div>
+<script src="timing-data.js"></script>
+<script>
+(function(){
+  "use strict";
+  var D=document,root=D.documentElement,body=D.body,T=window.TIMING;
+  var $=function(id){return D.getElementById(id)};
+  var stage=$("stage"),view=$("view"),floor=$("floor"),world=$("world"),tableW=$("tableW"),itable=$("itable"),sheetWrap=$("sheetWrap"),nudge=$("nudge"),
+      sheetLayer=$("sheetLayer"),sheet=$("sheet"),tiles=$("tiles"),content=$("content"),pawBox=$("pawBox"),rug=$("rug"),kitchen=$("kitchen"),haze=$("haze"),hello=$("hello"),paw=$("paw"),paw2=$("paw2"),objTop=$("objTop"),svh=$("svh"),
+      cscrim=$("cscrim"),csheet=$("csheet"),csbody=$("csbody"),okbar=$("okbar"),oktext=$("oktext"),okyes=$("okyes"),okfix=$("okfix");
+  [].forEach.call(hello.querySelectorAll(".w"),function(w,j){w.style.setProperty("--d",(j<2?j*170:340+(j-2)*75)+"ms")});
+  if(!T||!T.items){content.innerHTML='<h1>Тайминг</h1><p class="sub">Не удалось загрузить тайминг. Обновите страницу.</p>';sheetLayer.style.transform="translate(50vw,10vh)";return}
+
+  var mq=window.matchMedia?window.matchMedia("(prefers-reduced-motion: reduce)"):null;
+  var RM=!!(mq&&mq.matches);
+  var clamp=function(v,a,b){return Math.max(a,Math.min(b,v))};
+  var ease=function(t){t=clamp(t,0,1);return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2};
+  var lerp=function(a,b,t){return a+(b-a)*t};
+
+  /* пересчёт раскладки не чаще раза за кадр */
+  var rafL=0,rafF=0,forceL=false;
+  function schedule(f){if(f)forceL=true;if(!rafL)rafL=requestAnimationFrame(function(){rafL=0;var f2=forceL;forceL=false;layout(f2)})}
+  function requestFrame(){if(!rafF)rafF=requestAnimationFrame(frame)}
+
+  // цепочка адресов: первый 404 → следующий; все 404 → fail
+  function loadChain(img,list,ok,fail){var i=0;img.decoding="async";
+    img.onload=function(){if(ok)ok(img)};
+    img.onerror=function(){i++;if(i<list.length)img.src=list[i];else{img.onerror=img.onload=null;if(fail)fail(img)}};
+    img.src=list[0]}
+
+  /* ===== вещи на столе (без водки и рук): 16 штук из 12 картинок. w — ширина в долях листа, r — поворот, m — зеркало.
+     Типы чередуются (один и тот же не ближе чем через 3 вещи); стороны слева/справа чередуются сверху вниз ===== */
+  var OBJ=(function(){
+    var W0={kalyan:1.15,macbook:1,tarelka:.62,rasteniye:.92,pivo:.4,zenit:.34,chakchak:.42,tabak:.3,kasseta:.4,shchipcy:.55,ugli:.4},// размеры по реальным меркам: лист ~60 см, табак 8 см, кружка 12 см, цветок крупный
+      
+      F={chakchak:"chak-chak",macbook:"macbook-novyj"},J=[0,.03,.05,.02,.04,.01];
+    return[["kalyan",1,12,0],["zenit",1,-14,1],["kasseta",1,-7,0],["chakchak",1,-6,0],["macbook",1,-7,1],["pivo",1,9,0],
+      ["tabak",1,14,0],["tarelka",1,10,0],["rasteniye",1,-8,0,-.1],["shchipcy",1,17,1],["ugli",1,-12,1],
+      ["zenit",.9,8,0]].map(function(a,i){
+      return{id:a[0],f:F[a[0]]||a[0],w:W0[a[0]]*a[1],r:a[2],m:a[3],j:a[4]!=null?a[4]:J[i%6]}})})();
+  OBJ.forEach(function(o){var im=D.createElement("img");im.className="obj";im.alt="";o.el=im;o.a=1;world.appendChild(im);
+    if(o.m)im.style.setProperty("--fx","-1");// у зеркальной вещи тень остаётся с той же стороны
+    loadChain(im,["predmety-foto/"+o.f+".webp","predmety-sverhu/"+o.f+".webp"],
+      function(){o.a=im.naturalHeight/im.naturalWidth||1;schedule(true)},
+      function(){o.dead=true;im.classList.add("hidden");schedule(true)})});
+
+  var catEl=D.createElement("img");catEl.className="obj";catEl.alt="";catEl.setAttribute("aria-hidden","true");catEl.hidden=true;world.appendChild(catEl);
+  var catA=1.24;loadChain(catEl,["predmety-foto/kosha-sidit.webp"],function(){catA=catEl.naturalHeight/catEl.naturalWidth||catA;catEl.hidden=false;schedule(true)},function(){catEl.remove()});
+  var CAT_ON=false;// кота пока не показываем (слово Григория 18.10: картинка не та); включить — true
+  function placeCat(wide){if(!catEl.parentNode)return;if(!wide||!CAT_ON){catEl.style.display="none";return}
+    var cw=W*.44,ch=cw*786/633;catEl.style.display="";catEl.style.width=cw+"px";catEl.style.transform="translate("+(W*.5-cw*.95)+"px,"+(-ch*.7)+"px)"}
+
+  /* ===== лист ===== */
+  // иконки блоков по id из данных: контур карандашом, viewBox 24×24 (у блока 08 шире: ключ и тройка); запасная — точка в круге
+  var ICONS={
+    "БЛОК 01":'<circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/><path d="M9 18V6l10-2v12M9 10l10-2"/>',
+    "БЛОК 02":'<path d="M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 3v5M7 10.5V21M17 21V3c-2.6 1.6-3.6 5.2-3.6 8.4 0 1 .6 1.6 1.6 1.6H17"/>',
+    "БЛОК 03":'<path d="M8 8.5a4 4 0 1 1 6.2 3.3c-1.4.9-2.2 1.7-2.2 3.2M12 19.5v.5M4 4.5l1.6 1.6M20 4.5l-1.6 1.6"/>',
+    "БЛОК 04":'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10.5 8.5v5l4-2.5zM8 20h8M12 17v3"/>',
+    "БЛОК 05":'<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z"/>',
+    "БЛОК 06":'<path d="M2 13.5s3.6-6.5 10-6.5 10 6.5 10 6.5-3.6 6.5-10 6.5S2 13.5 2 13.5z"/><circle cx="12" cy="13.5" r="2.8"/><path d="M12 1.5v2.2M5.5 4l1.4 1.6M18.5 4l-1.4 1.6"/>',
+    "БЛОК 07":'<g stroke-width="3.05" transform="translate(1 5) scale(.72)"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.1 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></g><path d="M14 8a3 3 0 0 1 2 2M14 4.5a6.5 6.5 0 0 1 5.5 5.5M14 1.5A9.5 9.5 0 0 1 22.5 10"/>',
+    "БЛОК 08":{vb:"0 0 27 24",d:'<path d="M9.5 2.5v17a2.2 2.2 0 1 1-2.2-2.2M9.5 15.5C4 16 3.5 8.5 8.5 8.5c4.3 0 4 6 1 6.3M9.5 2.5C7 5 7.2 7.5 9 9"/><path d="M16.5 8.5h5.4l-3.3 3.7c2.5-.2 4 1.2 4 3.1 0 2.1-1.7 3.5-4 3.5-1.4 0-2.5-.4-3.4-1.3"/>'},
+    "БЛОК 09":{vb:"0 0 34 24",d:'<circle cx="11" cy="12" r="9"/><path d="M6.5 15.5c1.8-.6 2.8-2.3 2.4-4.1 1.7.9 3.6.4 4.6-1.3.4 1.8-.5 3.3-1.8 4.2 2.3.4 3.7-.6 4.6-1.9-.3 2.7-2.3 4.4-4.9 4.6-1.8.1-3.6-.7-4.5-.4z"/><rect x="25" y="3.5" width="5.5" height="9.5" rx="2.75"/><path d="M23.5 11.5v.8a4.25 4.25 0 0 0 8.5 0v-.8M27.75 16.5V21M25 21h5.5"/>'},
+    "БЛОК 10":'<path d="M6 3h12M6 21h12M7 3c0 5 3 6 5 9-2 3-5 4-5 9M17 3c0 5-3 6-5 9 2 3 5 4 5 9"/>',
+    "БЛОК 11":'<path d="M16 3l1.8 5.2L23 10l-5.2 1.8L16 17l-1.8-5.2L9 10l5.2-1.8zM12.5 13.5L4 22"/>'
+  },ICON_DOT='<circle cx="12" cy="12" r="3.2"/>';
+  function iconFor(r){var k=String(r.id||"").replace(/\s+/g," ").trim(),ic=ICONS[k]||ICON_DOT,o=typeof ic==="string"?{d:ic}:ic;
+    var s=D.createElement("span");s.className="ic"+(o.vb?" w":"");s.setAttribute("aria-hidden","true");
+    s.innerHTML='<svg viewBox="'+(o.vb||"0 0 24 24")+'" focusable="false">'+o.d+'</svg>';return{el:s,wide:!!o.vb}}
+  // перерыв: три схематичных танцующих человечка (метка-«каракуля» зелёными чернилами)
+  function dancers(){var e=D.createElement("span");e.className="dnc";e.setAttribute("aria-hidden","true");
+    e.innerHTML='<svg viewBox="0 0 46 22" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+
+      '<circle cx="8" cy="4" r="2.2"/><path d="M8 6.5V13M8 8L4 4.5M8 8l4 3M8 13l-3 6M8 13l3.5 5"/>'+
+      '<circle cx="23" cy="4.5" r="2.2"/><path d="M23 7V13.5M23 8.5l-4.2 2.8M23 8.5l4.2-3.5M23 13.5l-2.2 5.5M23 13.5l3.6-3.5l1.2 6"/>'+
+      '<circle cx="38" cy="4" r="2.2"/><path d="M38 6.5V13M38 8l-4-4M38 8l4-4M38 13l-3.5 5M38 13l3 6"/></g></svg>';return e}
+  var h1=D.createElement("h1");h1.textContent="Тайминг";content.appendChild(h1);
+  var sub=D.createElement("div");sub.className="sub";sub.textContent=[T.couple,T.date,T.city].filter(Boolean).join(" · ");content.appendChild(sub);
+
+  // скетч: в листе — карточка у края (узкий экран), на столе — снимок сбоку (широкий).
+  // GROUPS: снимки одного блока (блок — строка перед скетчем); перед блоком — зазор .gap на случай тесноты
+  // телефон: какие рисунки остаются в листе (w — ширина в % поля листа; big — по центру во всю ширину, fade — мягкий низ),
+  // а какие лежат снимками на столе у края листа (table). На широком экране все рисунки — снимки на столе, как раньше
+  var MOB={"sketch-hondovod-2.webp":{table:1},"sketch-futbol.webp":{w:50},"sketch-kosha-tanec.webp":{w:52,fade:1},"sketch-kosha-mandarin.webp":{w:90,big:1},
+    "sketch-music-combat-subzero-v2.webp":{table:1,anchor:"Music Combat"},"sketch-prostavitsya.webp":{w:98,big:1,plain:1},"sketch-kalyan.webp":{table:1},
+    "sketch-kosha-ochistitel-bez-rasteniya.webp":{table:1},
+    "sketch-fikus-gost.webp":{table:1},"sketch-nastolka.webp":{table:1},"sketch-ne-edet.webp":{table:1},"sketch-fikus.webp":{w:92,big:1,plain:1},"sketch-spasatel.webp":{table:1}};
+  var SK=[],GROUPS=[],BLK=[],lastSide="r",prevFig=false,lastBlk=null,SZ=[.46,.34,.5,.4,.36,.48,.42,.32];// размеры картинок в доле ширины поля листа
+  function addSketch(r){
+    var side=r.side==="l"?"l":r.side==="r"?"r":(lastSide==="l"?"r":"l");
+    if(prevFig&&side===lastSide)side=side==="l"?"r":"l";// соседние карточки — в разные стороны
+    lastSide=side;
+    var f=D.createElement("figure");f.className="sk "+side;var im=D.createElement("img");im.alt="";f.appendChild(im);
+    // картинка стоит сбоку у своего блока (перед его строкой — текст блока обтекает её); у блока уже есть картинка — идёт следом, ниже (clear:both)
+    if(lastBlk&&!lastBlk._fig){content.insertBefore(f,lastBlk);lastBlk._fig=1}else content.appendChild(f);
+    var ph=D.createElement("div");ph.className="photo";var pi=D.createElement("img");pi.alt="";pi.decoding="async";ph.appendChild(pi);world.appendChild(ph);
+    var own=lastBlk||sub,gr=GROUPS.length&&GROUPS[GROUPS.length-1].blk===own?GROUPS[GROUPS.length-1]:null;
+    if(!gr){var gp=D.createElement("i");gp.className="gap";gp.setAttribute("aria-hidden","true");own.parentNode.insertBefore(gp,own);gr={blk:own,gap:gp,qs:[],c:0,h:0};GROUPS.push(gr)}
+    var mob=MOB[r.file]||{};if(mob.table){f.classList.add("tbl");ph.classList.add("tbl")}if(mob.big)f.classList.add("big");if(mob.fade)f.classList.add("fade");
+    var n=SK.length,q={mob:mob,blk:own,fig:f,ph:ph,pref:r.side==="l"?-1:r.side==="r"?1:0,rot:(n%2?-1:1)*(2+n%3),a:.8,dead:false,sz:SZ[n%SZ.length]};SK.push(q);gr.qs.push(q);
+    f.style.setProperty("--r",(side==="l"?-1:1)*(1.5+n%3*.5)+"deg");f.style.setProperty("--sw",Math.round(q.sz*100));
+    loadChain(im,["sketchi-lica-crop/"+r.file,"sketchi-crop/"+r.file],
+      function(){q.a=im.naturalHeight/im.naturalWidth||q.a;pi.src=im.currentSrc||im.src;
+        // у каждого свой размер: доля ширины поля из ряда SZ, высокие рисунки уже, чтобы площадь была примерно равной
+        f.style.setProperty("--sw",q.mob.w?q.mob.w:Math.round(clamp(q.sz*Math.sqrt(.65/q.a),.27,.5)*100));schedule(true)},// снимок берёт уже найденный адрес
+      function(){q.dead=true;f.classList.add("hidden");ph.classList.add("hidden");schedule(true)});
+  }
+  var grpN=1,newGrp=true;
+  T.items.forEach(function(r){
+    // скетч или «флирт» с картинкой — рисунок; без файла — на странице ничего (подписей нет)
+    if(r.kind==="sk"||r.kind==="flirt"){if(r.file){addSketch(r);prevFig=true}return}
+    prevFig=false;
+    var d=D.createElement("div"),t=D.createElement("div"),s=D.createElement("div");t.className="t";s.className="s";t.textContent=r.time||"";d.appendChild(t);d.appendChild(s);
+    if(r.kind==="pause"){newGrp=true;d.className="row brk";s.appendChild(dancers());s.appendChild(D.createTextNode(r.text||""));content.appendChild(d);return}
+    if(newGrp){var bn=D.createElement("div");bn.className="bn";bn.textContent="Блок "+grpN;content.appendChild(bn);grpN++;newGrp=false}
+    d.className="row blk "+(r.cat||"");d._r=r;
+    var ic=iconFor(r);s.appendChild(ic.el);if(ic.wide)d.classList.add("icw");
+    var ttl=D.createElement("span");ttl.className="ttl";ttl.textContent=String(r.title||"").replace(/ · блок A$/," · ч. 1").replace(/ · блок B$/," · ч. 2");s.appendChild(ttl);d.classList.add("mk"+(BLK.length%4));
+    if(r.mins){var m=D.createElement("span");m.className="n mins";m.textContent=r.mins;s.appendChild(m)}
+    if(r.stages){var stg=D.createElement("span");stg.className="stg";
+      r.stages.forEach(function(nm,si){var c=D.createElement("span");c.className="stc c"+si;
+        var nn=D.createElement("i");nn.textContent=String(si+1);c.appendChild(nn);c.appendChild(D.createTextNode(nm));stg.appendChild(c)});
+      s.appendChild(stg)}
+    if(r.desc&&!r.stages){var n=D.createElement("span");n.className="n dsc";
+      String(r.desc).split(" → ").forEach(function(seg,si){if(si){var ar=D.createElement("i");ar.className="ar";ar.textContent="→";n.appendChild(D.createTextNode(" "));n.appendChild(ar);n.appendChild(D.createTextNode(" "))}n.appendChild(D.createTextNode(seg))});
+      s.appendChild(n)}
+    d.tabIndex=0;d.setAttribute("role","button");d.setAttribute("aria-haspopup","dialog");
+    d.addEventListener("click",function(){openBlock(d)});
+    d.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();openBlock(d)}});
+    content.appendChild(d);BLK.push(d);lastBlk=d;
+  });
+
+  /* ===== появление по прокрутке: слова «проступают» на бумаге, скетчи в листе «рисуются» косой волной.
+     Положение элемента на экране считаем из камеры (без чтения DOM в кадре); при reduced-motion всё видно сразу ===== */
+  var REV=[],REVS=[],endQ=null,inkOn=false,STAIL=0,SY=null,SMOOTH=.2,HELLO_T0=0,HELLO_ON=false,SHH=-1;
+  function wrapWords(el){var tw=D.createTreeWalker(el,NodeFilter.SHOW_TEXT,null),nodes=[],nd,ws=[];
+    while((nd=tw.nextNode()))if(nd.nodeValue.trim())nodes.push(nd);
+    nodes.forEach(function(tn){var frag=D.createDocumentFragment();
+      tn.nodeValue.split(/(\s+)/).forEach(function(part){if(!part)return;
+        if(/^\s+$/.test(part)){frag.appendChild(D.createTextNode(part));return}
+        var sp=D.createElement("span");sp.textContent=part;frag.appendChild(sp);ws.push(sp)});
+      tn.parentNode.replaceChild(frag,tn)});
+    return ws}
+  [h1,sub].concat([].slice.call(content.querySelectorAll(".bn,.row"))).forEach(function(el){
+    REV.push({el:el,words:[],ic:el.querySelector&&el.querySelector(".ic"),y:null,last:-1,mx:0})});
+  [].slice.call(content.querySelectorAll("figure.sk")).forEach(function(f){REV.push({el:f,fig:true,y:null,last:-1,mx:0})});
+
+  // бумага (длинный лист, в пикселях исходника); без картинок — простой бумажный фон
+  var P={imgW:887,bw:650,mL:123,topM:49,topH:532,botH:532,botVis:484,botM:48,midH:886};
+  var tTop=new Image(),tMid=D.createElement("div"),tBot=new Image(),pMid=new Image();
+  tTop.className=tBot.className="tl";tTop.alt=tBot.alt="";tTop.decoding=tBot.decoding="async";tMid.className="midtile";
+  function noPaper(){sheet.classList.add("nopaper");tTop.classList.add("hidden");tBot.classList.add("hidden");tMid.classList.add("hidden")}
+  tTop.onerror=tBot.onerror=pMid.onerror=noPaper;
+  tTop.src="bumaga-top.webp";tBot.src="bumaga-bot.webp";pMid.src="bumaga-mid.webp";tMid.style.backgroundImage='url("bumaga-mid.webp")';
+  tiles.appendChild(tMid);tiles.appendChild(tTop);tiles.appendChild(tBot);
+
+  // финал (пол ~6 МБ, лапы ~1 МБ) грузим после страницы или когда читатель подошёл к концу листа
+  var pawOK=false,paw2OK=false,pawA=1.3,finalAsked=false,rugOK=false,RUG={w:0,h:0,rot:0,cx:0,cy:0},CEL=null;
+  // предметы пола: w — ширина в долях ширины коврика на экране, x/y — центр от верхнего левого угла коврика в его долях (вне 0…1 — на полу за краем), r — поворот
+  var polBox=document.getElementById("pol"),POL=[
+    {f:"tapochki",w:.34,x:.27,y:-.16,r:-14},{f:"miska-kota",w:.2,x:.84,y:-.1,r:0},
+    {f:"igrushka-mysh",w:.16,x:.17,y:1.04,r:18},{f:"nosok",w:.13,x:.88,y:1.05,r:-25}];
+  /* ===== Flow-хвост, управляется ПРОКРУТКОЙ: кадры видео «стол → пол» листаются вперёд и назад вместе со скроллом (нет автозапуска).
+     Фазы по p: до .86 — чтение, потом всё со стола улетает и лист чистый; .86….985 — кадры (p сглажен камерой); дальше — финал страницы и кошка. ===== */
+  var tailC=document.getElementById("tailc"),TAIL={on:false,ready:false,asked:false,src:"",fr:[],n:60,dir:"",pos:-1,op:-1,A:.89,B:.985,hold:false};
+  function tailWant(){return window.innerWidth>=window.innerHeight*1.25?"f16":"f9"}
+  // кадры: вертикально 540×960 (final/tail9), горизонтально 960×540 (final/tail16); картинки грузятся везде, ничего не стартует само
+  function tailLoad(){
+    var want=tailWant();
+    if(!tailC||TAIL.src===want)return;
+    TAIL.asked=true;TAIL.ready=false;TAIL.on=false;TAIL.src=want;TAIL.fr=[];TAIL.pos=-1;
+    var land=want==="f16";tailC.width=land?768:432;tailC.height=land?432:768;TAIL.dir=land?"final/tail16/f":"final/tail9/f";
+    var left=TAIL.n,k;
+    for(k=1;k<=TAIL.n;k++)(function(k){var im=new Image();
+      im.onload=im.onerror=function(){if(--left===0&&TAIL.src===want){TAIL.ready=TAIL.fr[0]&&TAIL.fr[0].naturalWidth>0;schedule(true);requestFrame()}};
+      im.src=TAIL.dir+(k<10?"0":"")+k+".webp";TAIL.fr[k-1]=im})(k)
+  }
+  function tailDraw(i){var im=TAIL.fr[Math.max(0,Math.min(TAIL.n-1,i))];
+    if(im&&im.naturalWidth)tailC.getContext("2d").drawImage(im,0,0,tailC.width,tailC.height)}
+  // сцена под кадрами: пока листаем кадры — стол с чистым листом (.8), когда кадры дошли до пола — финал (1)
+  function tailStep(p){
+    if(!TAIL.on){TAIL.hold=false;if(TAIL.op!==0){TAIL.op=0;tailC.style.opacity="0"}return p}
+    var tp=clamp((p-TAIL.A)/(TAIL.B-TAIL.A),0,1),fi=Math.round(tp*(TAIL.n-1));
+    var op=clamp((p-(TAIL.A-.012))/.012,0,1)*(1-clamp((p-TAIL.B)/.015,0,1));// сначала проявляется ровно на кадре чистого листа, в конце уходит, открывая финал страницы
+    if(fi!==TAIL.pos){TAIL.pos=fi;tailDraw(fi)}
+    op=Math.round(op*100)/100;if(op!==TAIL.op){TAIL.op=op;tailC.style.opacity=String(op)}
+    TAIL.hold=p<TAIL.B;
+    // пока листаются кадры, сцена под ними стоит на «целый лист на столе»: камера отъезжает (p .78→.89 → кадр .88), стол и лист на месте
+    return p<TAIL.B?(p<.78?p:.78+(Math.min(p,TAIL.A)-.78)/(TAIL.A-.78)*.1):1}
+  var celOn=false,celTried=false,legacyAsked=false,legacyRug=false,polUrl="";
+  function ensureLegacy(){
+    if(legacyAsked)return;legacyAsked=true;
+    // пол: webp → png → CSS-доски
+    var list=["final/pol.webp","final/pol.webp"],i=0,im=new Image();
+    im.onload=function(){polUrl=list[i];if(!celOn){floor.style.backgroundImage='url("'+polUrl+'")';floor.classList.add("img")}};
+    im.onerror=function(){i++;if(i<list.length)im.src=list[i]};im.src=list[0];
+    // коврик под лист: нет файла → пол остаётся голым
+    loadChain(rug,["final/kovrik.webp","final/kovrik.webp"],function(){legacyRug=true;schedule(true);requestFrame()},function(){legacyRug=false});
+    // предметы пола: каждый грузится сам, нет файла — просто не появится
+    POL.forEach(function(o){var im=new Image();im.alt="";polBox.appendChild(im);o.el=im;
+      loadChain(im,["final/predmety-pola/"+o.f+".webp","final/predmety-pola/"+o.f+".webp"],
+        function(){o.ok=true;o.a=im.naturalHeight/im.naturalWidth||1;schedule(true);requestFrame()},function(){o.ok=false;im.remove()})});
+  }
+  function loadFinal(){
+    if(finalAsked)return;finalAsked=true;
+    // цельный кадр пола (коврик и вещи на одной картинке): final/pol-cel/use.json = {file, rug:[левый,верх,правый,низ в долях кадра]}.
+    // Нет файла или не открылся — прежняя сборка слоями (пол, коврик, предметы)
+    // use.json = {port:{file,rug}, wide:{file,rug}}: свой цельный кадр для вертикального и для широкого экрана; нет нужного — сборка слоями
+    if(window.fetch)fetch("final/pol-cel/use.json",{cache:"no-cache"}).then(function(r){return r.ok?r.json():Promise.reject()}).then(function(j){
+      var C={p:null,w:null},tot=0,left=0;
+      var done=function(){if(--left<=0){celTried=true;schedule(true);requestFrame()}};
+      [["port","p"],["wide","w"]].forEach(function(k){var e=j[k[0]];if(!e)return;tot++;left++;
+        var im=new Image(),u="final/pol-cel/"+e.file;
+        im.onload=function(){C[k[1]]={w:im.naturalWidth,h:im.naturalHeight,rug:e.rug,url:u};CEL=C;schedule(true);requestFrame();done()};
+        im.onerror=done;im.src=u});
+      if(!tot){celTried=true;ensureLegacy()}}).catch(function(){celTried=true;ensureLegacy()});
+    else{celTried=true;ensureLegacy()}
+    // лапа: нет файлов → прячем молча
+    loadChain(paw,["final/lapa-1-real.webp","final/lapa-1-real.webp"],function(){
+      pawOK=true;pawA=paw.naturalHeight/paw.naturalWidth||pawA;pawBox.hidden=false;schedule(true);
+      loadChain(paw2,["final/lapa-2-real.webp","final/lapa-2-real.webp"],function(){paw2OK=true},function(){paw2OK=false;paw2.classList.add("hidden")});
+    },function(){pawOK=false;pawBox.hidden=true});
+  }
+
+  /* ===== шторка блока и подтверждение ===== */
+  var TG="https://t.me/komarez?text=",CATL={want:"Хотим",maybe:"Можно",pending:"Уточнить"};
+  var isOpen=false,lastFocus=null,restoring=false;
+  function esc(t){var e=D.createElement("div");e.textContent=t==null?"":String(t);return e.innerHTML}
+  function tg(text){return TG+encodeURIComponent(text)}
+  var who=T.couple+" · "+T.date;
+  // под шторкой всё недоступно: сцена, плашка и общая шапка шагов
+  function setInert(on){stage.inert=on;okbar.inert=on;var hd=D.querySelector("header.sh");if(hd)hd.inert=on}
+  function openSheet(html,opener){
+    if(!isOpen)lastFocus=opener||D.activeElement;
+    csbody.innerHTML=html;isOpen=true;
+    cscrim.classList.add("on");csheet.classList.add("on");csheet.scrollTop=0;
+    setInert(true);
+    try{csheet.focus({preventScroll:true})}catch(e){csheet.focus()}
+  }
+  function closeSheet(){
+    if(!isOpen)return;isOpen=false;
+    cscrim.classList.remove("on");csheet.classList.remove("on");setInert(false);
+    if(lastFocus&&D.contains(lastFocus)&&lastFocus.focus){restoring=true;try{lastFocus.focus({preventScroll:true})}catch(e){}restoring=false}
+  }
+  function openBlock(el){var r=el._r,dur=(r.mins||"").split(" · ")[0];
+    openSheet('<div class="ct">'+esc(r.time)+(dur?' · '+esc(dur):'')+'</div><h2 id="cstitle">'+esc(r.title)+'</h2>'+(r.desc?'<p>'+esc(r.desc)+'</p>':'')+
+      '<div class="cs-foot"><button class="btn ghost" type="button" data-fix="1">Поправить этот блок</button></div>',el);
+    csbody.querySelector("[data-fix]").addEventListener("click",function(){openFix("«"+r.title+"» ("+r.time+"): ")});
+  }
+  function openFix(pre,opener){
+    openSheet('<h2 id="cstitle">Что поправить?</h2><p>Напишите, что и в каком блоке. Например: «Блок 3 лучше пораньше, без квиза».</p>'+
+      '<textarea id="fixtext" aria-label="Что поправить"></textarea><a class="btn" id="fixsend" target="_blank" rel="noopener" href="#">Отправить Григорию в Telegram</a>',opener);
+    var ta=$("fixtext"),a=$("fixsend"),upd=function(){a.href=tg(who+": хотим поправить тайминг. "+ta.value)};
+    if(pre)ta.value=pre;upd();ta.addEventListener("input",upd);
+  }
+  function openAccepted(opener){
+    openSheet('<h2 id="cstitle">Спасибо!</h2><p>Тайминг на '+esc(T.date)+' отмечен как верный. Нажмите кнопку, откроется Telegram с готовым сообщением Григорию, останется отправить.</p>'+
+      '<div class="cs-foot"><a class="btn" target="_blank" rel="noopener" href="'+tg(who+": тайминг вечера принят, всё верно ✅")+'">Написать Григорию</a><button class="btn ghost" type="button" data-fix="1">Всё-таки поправить</button></div>',opener);
+    csbody.querySelector("[data-fix]").addEventListener("click",function(){openFix("")});
+  }
+  cscrim.addEventListener("click",closeSheet);$("csx").addEventListener("click",closeSheet);
+  cscrim.addEventListener("wheel",function(e){e.preventDefault()},{passive:false});
+  cscrim.addEventListener("touchmove",function(e){e.preventDefault()},{passive:false});
+  // Escape + Tab не уходит под фон
+  D.addEventListener("keydown",function(e){
+    if(!isOpen)return;
+    if(e.key==="Escape"){e.preventDefault();closeSheet();return}
+    if(e.key!=="Tab")return;
+    var f=Array.prototype.filter.call(csheet.querySelectorAll('a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])'),function(el){return el.getClientRects().length>0});
+    if(!f.length){e.preventDefault();csheet.focus();return}
+    var a=D.activeElement,first=f[0],last=f[f.length-1];
+    if(!csheet.contains(a)||a===csheet){e.preventDefault();(e.shiftKey?last:first).focus()}
+    else if(e.shiftKey&&a===first){e.preventDefault();last.focus()}
+    else if(!e.shiftKey&&a===last){e.preventDefault();first.focus()}
+  });
+
+  var accepted=false;try{accepted=localStorage.getItem("timing-ok")==="1"}catch(e){}
+  function setAccepted(on){oktext.textContent=on?"Принято ✓":"Всё верно?";okyes.textContent=on?"Написать Григорию снова":"Да, так";okfix.hidden=on}
+  setAccepted(accepted);
+  okyes.addEventListener("click",function(){
+    if(!accepted){accepted=true;try{localStorage.setItem("timing-ok","1")}catch(e){}setAccepted(true);schedule(true)}
+    openAccepted(okyes);
+  });
+  okfix.addEventListener("click",function(){openFix("",okfix)});
+
+  /* ===== раскладка по размеру экрана ===== */
+  var YE0=0,U_EDGE=0,itOn=false,INTRO=0,TH0=80,YC=0,PERSP=1,YH0=0,vw=0,vh=0,W=0,H=0,s0=1,s3=1,y0=0,y1=0,y2=0,EX=0,FY=0,SC_END=.65,ROT_END=5.5,stageTop=0,stageH=1,topPadRM=0,lastKey="",WIDE=false,ROWPOS=[];
+  // HDR — низ общей шапки; RL — линия чтения ниже центра экрана на полшапки (центр видимой области); TOPF — верх листа на крупном плане
+  var HDR=64,RL=32,TOPF=.07;
+  var PAW={left:0,w:120,h:156};
+
+  // сдвигает прямоугольник вниз, пока он пересекается с уже поставленными (вещи на столе)
+  function fit(r,list,gap){
+    for(var g=0;g<400;g++){var hit=null;
+      for(var i=0;i<list.length;i++){var o=list[i];
+        if(r.x<o.x+o.w+gap&&r.x+r.w+gap>o.x&&r.y<o.y+o.h+gap&&r.y+r.h+gap>o.y&&(!hit||o.y+o.h>hit.y+hit.h))hit=o}
+      if(!hit)break;r.y=hit.y+hit.h+gap}
+    return r}
+  function photoBox(q,pw){var pad=pw*.024,h=(pw-2*pad)*q.a+pad+pw*.07,t=Math.abs(q.rot)*Math.PI/180,c=Math.cos(t),s=Math.sin(t);return{bw:pw*c+h*s,bh:pw*s+h*c}}
+
+  /* снимки на широком экране. Колонка у каждого края листа (от .55W наружу, под бумагу не заходят).
+     Снимок по центру своего блока; если место занято — ближайшее свободное выше или ниже, но так,
+     чтобы при блоке на линии чтения снимок целиком был между шапкой и низом экрана и не стоял ниже блока.
+     Не влез — перед блоком зазор (строки раздвигаются только здесь). */
+  function slot(P,h,ideal,lo,hi,g){
+    var free=function(t){for(var i=0;i<P.length;i++){var o=P[i];if(t<o.t+o.h+g-.5&&t+h+g>o.t+.5)return false}return true};
+    var cand=[clamp(ideal,lo,hi),lo,hi],best=null,bd=1e9,low=1e9;
+    P.forEach(function(o){cand.push(o.t-g-h,o.t+o.h+g)});
+    cand.forEach(function(t){if(!free(t))return;
+      if(t>=lo-.5&&t<=hi+.5){var dd=Math.abs(t-ideal);if(dd<bd){bd=dd;best=t}}
+      else if(t>hi&&t<low)low=t});
+    return best!=null?{t:best,need:0}:{t:null,need:low<1e9?low-hi:W}}
+  function colBottom(P){var b=-1e9;P.forEach(function(o){b=Math.max(b,o.t+o.h)});return b}
+  function placeGroup(gr,c,pw,col,y2e,loose){
+    var g=W*.03,half=(vh-HDR)/2-Math.max(10,W*.02),cc=clamp(c-RL,y1,Math.max(y1,y2e))+RL,top=c-gr.h/2,
+        tmp={"-1":col[-1].slice(),"1":col[1].slice()},list=[],need=0,used={};
+    gr.qs.forEach(function(q){if(q.dead)return;
+      var b=photoBox(q,pw),ideal=c-b.bh/2,lo=Math.max(W*.03,cc-half),hi=loose?1e9:Math.min(cc+half-b.bh,Math.max(top,ideal));
+      if(hi<lo)hi=lo;
+      // своя сторона из данных; «c» — напротив соседа по блоку или где колонка короче; своя занята — другая
+      var s1=q.pref||(used[-1]?1:used[1]?-1:(colBottom(tmp[-1])<=colBottom(tmp[1])?-1:1)),pick=null,miss=null;
+      [s1,-s1].forEach(function(s){if(pick)return;var r=slot(tmp[s],b.bh,ideal,lo,hi,g);
+        if(r.t!=null)pick={s:s,t:r.t};else if(!miss||r.need<miss.need)miss={s:s,t:hi+r.need,need:r.need}});
+      if(!pick){pick=miss;need=Math.max(need,miss.need)}
+      tmp[pick.s].push({t:pick.t,h:b.bh});used[pick.s]=1;list.push({q:q,s:pick.s,t:pick.t,b:b});
+    });
+    return{col:tmp,list:list,need:need}}
+  function placePhotos(pw,Hc){
+    var col={"-1":[],"1":[]},list=[],gaps=[],sum=0,shift=0;
+    GROUPS.forEach(function(gr){
+      var d=0,res,y2e=Hc-.43*vh;
+      for(var k=0;;k++){
+        res=placeGroup(gr,gr.c+shift+d,pw,col,y2e+shift+d,false);
+        if(res.need<=.5)break;
+        // блок выше первой линии чтения (камера к нему не подъедет) или зазор вышел большим — ближайшее свободное место без окна
+        if(k>=3||d+res.need>W*.6||gr.c+shift+d+res.need-RL<y1){res=placeGroup(gr,gr.c+shift+d,pw,col,y2e+shift+d,true);break}
+        d+=res.need}
+      col=res.col;shift+=d;sum+=d;gaps.push(d);
+      res.list.forEach(function(o){list.push(o)});
+    });
+    return{pw:pw,list:list,gaps:gaps,sum:sum}}
+  function layoutPhotos(pwMax,Hc){
+    // самые крупные снимки, при которых строки почти не раздвигаются; иначе мельче, но не меньше .42W
+    var best=null,pw=pwMax,r;
+    for(;;){r=placePhotos(pw,Hc);if(!best||r.sum<best.sum-.5)best=r;
+      if(r.sum<=W*.06||pw<=W*.42+.5)break;pw=Math.max(W*.42,pw-W*.02)}
+    GROUPS.forEach(function(gr,i){gr.gap.style.height=best.gaps[i]>.5?best.gaps[i]+"px":""});
+    var x0=W*.55,rects=[],right=0,pad=best.pw*.024;
+    // хаос: у каждого снимка свой угол (±5…22°), сдвиг наружу и по высоте; число от номера, поэтому раскладка не прыгает
+    var jr=function(k,m){var v=Math.sin((k+1)*12.9898+m*78.233)*43758.5453;return v-Math.floor(v)};
+    best.list.forEach(function(o,k){var st=o.q.ph.style,bw=o.b.bw,out=(jr(k,1)*.42-.1)*best.pw,dy=(jr(k,2)-.5)*best.pw*.3+(o.s<0?-.4:.4)*best.pw,// левые чуть выше, правые ниже: между снимками остаются просветы для вещей
+        
+        rot=(jr(k,3)<.5?-1:1)*(5+jr(k,4)*17),x=o.s<0?-(x0+bw)-out:x0+out,t=o.t+dy;o.q.rot=rot;
+      st.width=best.pw+"px";st.padding=pad+"px "+pad+"px "+(best.pw*.07)+"px";
+      st.left=(x+bw/2)+"px";st.top=(t+o.b.bh/2)+"px";st.transform="translate(calc(-50% + var(--dx,0px)),-50%) rotate("+rot+"deg)";
+      var m=best.pw*.1,inner=o.s<0?-x0:x0,cx0=o.s<0?x-m:Math.min(inner,x)-m,cx1=o.s<0?-x0+m:x+bw+m;// коридор от края листа до снимка: вещи сюда не ставим
+      rects.push({x:cx0,y:t-m,w:cx1-cx0,h:o.b.bh+2*m});right=Math.max(right,(o.s<0?x0+out:x0+out)+bw);
+    });
+    return{rects:rects,right:right}}
+  // вещи: цели по высоте — равные интервалы по всей длине листа, стороны чередуются; та же проверка пересечений, что у снимков
+  // (с каждым прямоугольником, рядом: ближайшее свободное место). Две полосы: у листа, рядом со снимками (там вещь не шире полосы,
+  // чтобы при vw ≥ 2.1W остаться на экране), и снаружи снимков (полный размер, виден на общем плане). Узкий экран: только у листа.
+  // Не нашлось места без наложения — вещь прячется.
+  function freeAt(rs,x,y,w,h,g){
+    for(var i=0;i<rs.length;i++){var o=rs[i];if(x<o.x+o.w+g&&x+w+g>o.x&&y<o.y+o.h+g&&y+h+g>o.y)return false}
+    return true}
+  function nearFree(rs,x,w,h,ideal,lo,hi,g){
+    var c=[clamp(ideal,lo,hi),lo,hi],best=null,bd=1e9;
+    rs.forEach(function(o){c.push(o.y-g-h,o.y+o.h+g)});
+    c.forEach(function(y){if(y<lo-.5||y>hi+.5||!freeAt(rs,x,y,w,h,g))return;var d=Math.abs(y-ideal);if(d<bd){bd=d;best=y}});
+    return best==null?null:{y:best,d:bd}}
+  function layoutObjects(rects,wide,xin,xout,cap){
+    var P=rects.length,live=OBJ.filter(function(o){return !o.dead}),n=live.length,start=W*.15,end=Math.max(start+W,H-W*.4),step=n>1?(end-start)/(n-1):0,g=W*.03,right=0;
+    OBJ.forEach(function(o){o.el.style.display=""});
+    // чередование: вещь i стоит в промежутке между двумя соседними снимками и с противоположной от них стороны (фото → вещь → фото → вещь)
+    var ph=rects.slice(0,P).map(function(r){return{cy:r.y+r.h/2,sd:(r.x+r.w/2)<0?-1:1}}).sort(function(a,b){return a.cy-b.cy}),G=ph.length-1;
+    live.forEach(function(o,i){
+      var side=i%2?1:-1,out=false,ideal=start+i*step,best=null,tol=Math.max(W*.8,step*2);
+      if(G>0){var gi=Math.min(G-1,Math.round(i*(G-1)/Math.max(1,n-1)));ideal=(ph[gi].cy+ph[gi+1].cy)/2;side=-ph[gi].sd}
+      // порядок попыток: своя сторона (своя полоса, другая полоса), затем противоположная
+      [1,.82,.66,.52].forEach(function(fct){if(best)return;   // не влезло — пробуем поменьше, лишь потом прячем
+      [[side,out],[side,!out],[-side,out],[-side,!out]].forEach(function(t){
+        if(best&&best.d<=tol)return;
+        var s=t[0],isOut=t[1];if(!wide&&isOut)return;
+        var w=o.w*W*fct*(wide?1:.9),a=Math.abs(o.r)*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a),x0=(isOut?xout:xin)+o.j*W;
+        var bw=w*cs+w*o.a*sn;
+        if(wide&&!isOut&&bw>cap-o.j*W){w*=Math.max(.2,(cap-o.j*W)/bw);bw=w*cs+w*o.a*sn}
+        var bh=w*sn+w*o.a*cs,x=s<0?-(x0+bw):x0,f=nearFree(o.id==="kalyan"?rects.slice(P):rects,x,bw,bh,ideal-bh/2,-W*.1,Math.max(-W*.1,H-bh*.6),g);
+        if(f&&(!best||f.d<best.d))best={s:s,x:x,y:f.y,w:w,bw:bw,bh:bh,d:f.d,ext:x0+bw}})});
+      var st=o.el.style;
+      if(!best){st.display="none";return}
+      rects.push({x:best.x,y:best.y,w:best.bw,h:best.bh});
+      st.width=best.w+"px";st.left=(best.x+best.bw/2)+"px";st.top=(best.y+best.bh/2)+"px";
+      st.transform="translate(var(--dx,0px),0) translate(-50%,-50%) rotate("+o.r+"deg) rotate(var(--dr,0deg))"+(o.m?" scaleX(-1)":"")+" scale(var(--sc,1))";
+      right=Math.max(right,best.ext);
+    });
+    return right}
+
+  function placeOkbar(){
+    var ow=okbar.offsetWidth,mode="c";
+    if(pawOK){var a=PAW.left-12,b=PAW.left+PAW.w+12,hit=function(l,r){return l<b&&r>a};
+      if(hit(vw/2-ow/2,vw/2+ow/2))mode=hit(12,12+ow)?"t":"l"}
+    okbar.classList.toggle("at-l",mode==="l");okbar.classList.toggle("at-t",mode==="t");
+    return mode}
+
+  function layout(force){
+    var nvw=root.clientWidth||window.innerWidth,nvh=svh.offsetHeight||window.innerHeight;// clientWidth — без полосы прокрутки
+    var hd=D.querySelector("header.sh"),nh=hd?Math.round(hd.offsetTop+hd.offsetHeight):64;// шапку добавляет steps-header.js (defer)
+    var key=nvw+"x"+nvh+"h"+nh+(RM?"r":"");
+    if(!force&&key===lastKey){requestFrame();return}// iOS: панель Safari меняет innerHeight, svh — нет
+    lastKey=key;vw=nvw;vh=nvh;HDR=nh;RL=HDR/2;
+    body.classList.toggle("rm",RM);
+    // телефон: лист .66 ширины (слово Григория 18.10), по краям место для вещей; планшет .74; широкий .9
+    W=Math.round(Math.min(vw*(vw<600?.66:vw<900?.74:.9),vh*.78));
+    root.style.setProperty("--W",W+"px");root.style.setProperty("--hdr",HDR+"px");
+    // крупный план: заголовок листа не прячется под шапкой
+    TOPF=clamp(Math.max(.07*vh,HDR+6-W*.14)/vh,.07,.3);
+    y1=(.5-TOPF)*vh;
+    // снимки на столе — только если свободная полоса у каждого края листа вмещает снимок от .42W (≈ vw ≥ 2.1W)
+    var strip=vw/2-W*.55-Math.max(10,W*.03),pwMax=Math.min(W*.46,strip/1.1);
+    WIDE=pwMax>=W*.42;body.classList.toggle("wide",WIDE);
+    GROUPS.forEach(function(gr){gr.gap.style.height=""});
+    var rects=[],phRight=0,Hc=content.offsetHeight;
+    if(WIDE){
+      SK.forEach(function(q){if(q.ph.parentNode!==world)world.appendChild(q.ph);q.ph.classList.remove("onp")});
+      GROUPS.forEach(function(gr){gr.h=gr.blk.offsetHeight;gr.c=gr.blk.offsetTop+gr.h/2});
+      var pr=layoutPhotos(pwMax,Hc);rects=pr.rects;phRight=pr.right}
+    else{// телефон: снимки лежат у краёв листа сверху (поверх рваного края бумаги), целиком видны; по сторонам по очереди, ровно по длине листа;
+      // свой блок у каждого (Music Combat — у «Music Combat»), «end» — на пустой бумаге в самом конце
+      var vis=Math.max(30,(vw-W)/2*.94),ov=W*.1,pw0=Math.round(vis+ov),items=[],last={"-1":-1e9,"1":-1e9},gp=W*.04;
+      GROUPS.forEach(function(gr){gr.h=gr.blk.offsetHeight;gr.c=gr.blk.offsetTop+gr.h/2});
+      endQ=null;
+      SK.forEach(function(q){if(q.dead||!q.mob.table)return;q.ph.classList.remove("onp");
+        if(q.mob.end){endQ=q;return}
+        var b=q.blk;if(q.mob.anchor){var ab=BLK.filter(function(x){return x._r&&String(x._r.title).indexOf(q.mob.anchor)===0})[0];if(ab)b=ab}
+        items.push({q:q,y:b.offsetTop+b.offsetHeight/2})});
+      items.sort(function(a,b){return a.y-b.y});
+      items.forEach(function(o,tn){var q=o.q,sd=tn%2?1:-1,h=(pw0*.976)*q.a+pw0*.052,rot=(tn%2?-1:1)*(3+tn*2%5),t=Math.max(o.y,last[sd]+h/2+gp);
+        last[sd]=t+h/2;var st=q.ph.style;st.width=pw0+"px";st.left=(sd*(W/2+vis-pw0/2))+"px";st.top=t+"px";
+        st.transform="translate(calc(-50% + var(--dx,0px)),-50%) rotate("+rot+"deg)";objTop.appendChild(q.ph);
+        rects.push({x:sd<0?-W/2-vis:W/2-ov,y:t-h/2,w:pw0,h:h})})}
+    var k=W/P.bw;
+    H=Math.max(content.offsetHeight,(P.topH-P.topM+P.botVis)*k+W*.2);
+    rects.forEach(function(r){H=Math.max(H,r.y+r.h+W*.08)});
+    if(!WIDE&&endQ){var ew=Math.round(W*.56),eh=ew*.976*endQ.a+ew*.052;H=Math.max(H,content.offsetHeight+eh+W*.12+P.botVis*k*.28)}
+    sheet.style.height=H+"px";
+    if(!WIDE&&endQ){var es=endQ.ph.style;es.width=ew+"px";es.left="0px";es.top=(content.offsetHeight+eh/2+W*.06)+"px";
+      es.transform="translate(-50%,-50%) rotate(-3deg)";objTop.appendChild(endQ.ph);endQ.ph.classList.add("onp")}
+    tTop.style.width=P.imgW*k+"px";tTop.style.left=-P.mL*k+"px";tTop.style.top=-P.topM*k+"px";
+    tBot.style.width=P.imgW*k+"px";tBot.style.left=-P.mL*k+"px";tBot.style.bottom=-P.botM*k+"px";tBot.style.top="auto";
+    var midTop=(P.topH-P.topM)*k,midBot=H-P.botVis*k;
+    // швы бумаги: края top и bot у стыков подогнаны под mid в самих картинках (tools/paper_seam_fix.py), здесь куски стыкуются встык
+    // стык не встык, а внахлёст: верх и низ растворяются в середину на SM px (края и тон плавно перетекают, ступеньки нет)
+    var SM=Math.min(90*k,(midBot-midTop)/2),fadeT="linear-gradient(#000 calc(100% - "+SM+"px),transparent)",fadeB="linear-gradient(transparent,#000 "+SM+"px)";
+    tTop.style.webkitMaskImage=tTop.style.maskImage=fadeT;tBot.style.webkitMaskImage=tBot.style.maskImage=fadeB;
+    // концы середины тоже тают (30% нахлёста): резкий обрез середины не торчит из-под верха и низа ступенькой на краю
+    tMid.style.webkitMaskImage=tMid.style.maskImage="linear-gradient(transparent,#000 "+SM*.3+"px,#000 calc(100% - "+SM*.3+"px),transparent)";
+    tMid.style.left=-P.mL*k+"px";tMid.style.width=P.imgW*k+"px";tMid.style.top=(midTop-SM)+"px";tMid.style.height=Math.max(0,midBot-midTop+2*SM)+"px";
+    tMid.style.backgroundSize=P.imgW*k+"px "+P.midH*k+"px";
+    placeCat(WIDE);
+    // вещи: на широком — на столе (world); на узком — над листом (objTop), внутренний край у .4W, т.е. на полях, не под текстом
+    OBJ.forEach(function(o){(WIDE?world:objTop).appendChild(o.el)});
+    var objRight=layoutObjects(rects,WIDE,WIDE?W*.55:W*.4,Math.max(W*1.05,phRight+W*.03),strip);
+    ROWPOS=BLK.map(function(el){var c=el.offsetTop+el.offsetHeight/2;el._c=c;return{el:el,c:c}});
+    REV.forEach(function(e){e.y=e.el.offsetParent?e.el.offsetTop+e.el.offsetHeight/2:null;e.last=-1});
+    // фото и вещи на столе выезжают с краёв по прокрутке (REVS): сторона по знаку x, высота — центр элемента в мире
+    REVS=[].slice.call(world.querySelectorAll(".photo,.obj")).concat([].slice.call(objTop.querySelectorAll(".obj,.photo:not(.onp)"))).filter(function(el){return el!==catEl&&el.offsetParent&&el.style.display!=="none"}).map(function(el,i){
+      return{el:el,dir:(parseFloat(el.style.left)||0)<0?-1:1,x:parseFloat(el.style.left)||0,hw:Math.max(el.offsetWidth,el.offsetHeight)/2,photo:el.classList.contains("photo"),y:parseFloat(el.style.top)||0,i:i,last:-1}});
+    // камера
+    s0=Math.min(vw*.46,vh*.42)/W;
+    var sheetTop=.22*vh;           // общий план: верх листа на 22% высоты
+    INTRO=RM?0:1.5*vh;             // длина интро в прокрутке: камера опускается от низкого вида (окно кухни) до 90° сверху
+    if(INTRO){PERSP=1.2*vh;YC=.6*vh;YH0=YC-PERSP/Math.tan(TH0*Math.PI/180);
+      var tIw=-2.4*vh/s0,u0=(sheetTop+s0*tIw)-YC,th0=TH0*Math.PI/180;YE0=YC+u0*Math.cos(th0)*PERSP/(PERSP-u0*Math.sin(th0));// где дальний край стола при старте
+      U_EDGE=u0;
+      var kc=Math.max(vw/1920,(YE0+10)/424);
+      kitchen.style.width=1920*kc+"px";kitchen.style.height=424*kc+"px";kitchen.style.left=(vw-1920*kc)/2+"px";kitchen.style.display="block";
+      haze.style.display="none"}
+    else{kitchen.style.display="none";haze.style.display="none"}
+    STAIL=RM?0:Math.round(3.6*vh);// запас прокрутки после падения листа: кошка вылезает, шлёпает и прячется по скроллу
+    if(!RM)stage.style.height=(INTRO+11*vh+STAIL)+"px";
+    y0=(vh/2-sheetTop)/s0;
+    y2=Math.max(y1,H-(.93-.5)*vh); // конец чтения: низ листа на 93%
+    s3=Math.min(.7*vh/H,.6*vw/W);
+    topPadRM=Math.max(HDR+16,vh*.1);
+    // стол — часть мира: едет и масштабируется вместе с листом
+    var halfT,tTopY,tBotY,tile=W*6.6;
+    if(RM){halfT=Math.max(vw/2+W*.1,objRight+W*.3);tTopY=-topPadRM-W*.1;tBotY=H+W*.3}
+    else{halfT=Math.max(.65*vw/s0,objRight+W*.3,1.9*W,.62*vw/s3);tTopY=-1.3*vh/s0;tBotY=H+1.3*vh/s0}
+    // короткий стол для наклонного интро: тот же дуб и та же привязка узора, но размером в пределах текстурных лимитов
+    var tI=-2.4*vh/s0,bI=1.3*vh/s0,hI=Math.min(9000,Math.max(5*W,vw/(2*s0*.28)));
+    hI=Math.min(hI,3900,56e6/(2*(bI-tI)));// площадь наклонного стола ≤ ~56 Мпикс: на больших и широких мониторах браузер не рисовал слой целиком (стол пропадал), за краем остаётся цвет дуба
+    var it=itable.style;
+    it.left=-hI+"px";it.top=tI+"px";it.width=2*hI+"px";it.height=(bI-tI)+"px";it.backgroundSize=tile+"px "+(tile*.5625)+"px";it.backgroundPosition=(hI-tile/2)+"px "+(-tI)+"px";
+    var ts=tableW.style;ts.left=-halfT+"px";ts.top=tTopY+"px";ts.width=2*halfT+"px";ts.height=(tBotY-tTopY)+"px";
+    ts.backgroundSize=tile+"px "+(tile*.5625)+"px";ts.backgroundPosition=(halfT-tile/2)+"px "+(-tTopY)+"px";
+    ts.boxShadow="0 0 0 "+(W*.014)+"px rgba(58,30,10,.55),0 "+(W*.05)+"px "+(W*.12)+"px rgba(15,8,2,.6)";
+    EX=Math.max(1.15*vh,vh/2+s3*(tBotY-H/2)+vh*.06);// стол целиком уходит вверх за кадр
+    // финал: лист на полу — .65 от размера на столе (слово Григория: «около 0,6–0,7»), лапа у его нижнего края
+    var th=ROT_END*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th),sw=W*s3,sl=H*s3;
+    var ext=function(sc){return sl*sc/2*cs+sw*sc/2*sn};
+    var brx=function(sc){return vw/2-sl*sc/2*sn+sw*sc/2*cs};
+    PAW.w=Math.round(RM?clamp(W*.3,80,Math.min(170,vw*.3)):clamp(sw*.65*.95*1.9,100,Math.min(340,vw*.4)));
+    PAW.h=PAW.w*pawA;
+    var pawLeft=function(sc){return RM?clamp(vw/2+W*.2,8,vw-PAW.w-8):clamp(brx(sc)-PAW.w*.6,8,vw-PAW.w-8)};
+    // мерки комнаты (слово Григория: «коврик в 3–4 раза больше»): лист ~60 см, коврик ~120×180 см → коврик в 3,5 раза длиннее листа.
+    // Размер коврика задаёт экран (на телефоне он стоит вертикально и занимает ~90 % ширины), лист подгоняется под него и длиннее не становится
+    var port=vw<vh*.9,RA=1.4,rs=port?Math.min(vw*.9,vh*.62/RA):Math.min(vw*.5/RA,vh*.62);
+    // цельный кадр пола: коврик — прямоугольник на самой картинке (cover, по центру кадра), лист ~3,5 раза короче его высоты
+    if(TAIL.asked&&TAIL.src!==tailWant())tailLoad();// экран повернули: другие кадры
+    TAIL.on=!RM&&TAIL.ready&&TAIL.src===tailWant();
+    var cel=null,CC=CEL?(port?CEL.p:CEL.w):null,wantCel=!!CC;
+    if(!wantCel&&celTried)ensureLegacy();// нет цельного кадра под эту ориентацию: сборка слоями
+    if(wantCel!==celOn||(wantCel&&floor.getAttribute("data-cel")!==CC.url)){celOn=wantCel;
+      if(celOn){floor.style.backgroundImage='url("'+CC.url+'")';floor.setAttribute("data-cel",CC.url);floor.classList.add("img")}
+      else if(polUrl){floor.style.backgroundImage='url("'+polUrl+'")';floor.removeAttribute("data-cel")}}
+    rugOK=!celOn&&legacyRug;rug.hidden=!rugOK;if(celOn)polBox.style.opacity=0;
+    if(celOn){var isc=Math.max(vw/CC.w,vh/CC.h),iox=(vw-CC.w*isc)/2,ioy=(vh-CC.h*isc)/2;
+      cel={l:iox+CC.rug[0]*CC.w*isc,t:ioy+CC.rug[1]*CC.h*isc,r:iox+CC.rug[2]*CC.w*isc,b:ioy+CC.rug[3]*CC.h*isc};
+      cel.w=cel.r-cel.l;cel.h=cel.b-cel.t}
+    var LK=1.3;// лист в финале в 2 раза крупнее исходного (Григорий 18.10: ×3 было слишком крупно, на треть меньше): длина = высота коврика / (3,5/2)
+    var SCR=Math.min(1.15,cel?cel.h/LK/sl:(port?rs*RA:rs)/LK/sl);
+    var mode,topRes;
+    PAW.left=pawLeft(SCR);mode=placeOkbar();
+    for(var pass=0;pass<2;pass++){
+      topRes=HDR+(mode==="t"?okbar.offsetHeight+20:10);// лист на полу не уходит под шапку и плашку
+      SC_END=Math.min(SCR,(vh-topRes-12)/(2*ext(1)));
+      PAW.left=pawLeft(SC_END);
+      var m2=placeOkbar();if(m2===mode)break;mode=m2;
+    }
+    var e=ext(SC_END),fyT=topRes+e-vh/2,fyM=vh/2-e-6;
+    FY=pawOK?Math.min(Math.max(vh-PAW.h*.72-e-vh/2,fyT),Math.max(fyT,fyM)):Math.min(Math.max(0,fyT),Math.max(fyT,fyM));
+    if(cel)FY=Math.max(fyT,cel.b-.08*cel.h-e-vh/2);// лист лежит внутри каймы коврика, ближе к его низу; лапа достаёт снизу
+    // коврик большой, лист лежит в его нижней части (нижний конец листа на 10 % длины коврика выше его края), лапа достаёт до листа снизу
+    RUG.w=Math.round(rs*RA);RUG.h=Math.round(rs);RUG.rot=(port?90:0)-ROT_END*.6;RUG.cx=vw/2;
+    var rbhE=port?RUG.w:RUG.h,pbE=vh/2+FY+sl*SC_END/2*cs+sw*SC_END/2*sn;
+    RUG.cy=Math.max(pbE+.1*rbhE-rbhE/2,topRes+rbhE/2+4);
+    rug.style.width=RUG.w+"px";rug.style.height=RUG.h+"px";rug.style.left=(RUG.cx-RUG.w/2)+"px";rug.style.top=(RUG.cy-RUG.h/2)+"px";rug.style.setProperty("--W",rs+"px");
+    // предметы пола вокруг коврика (на экране коврик стоит вертикально: ширина и высота меняются местами)
+    var rbw=port?RUG.h:RUG.w,rbh=port?RUG.w:RUG.h,rbx=RUG.cx-rbw/2,rby=RUG.cy-rbh/2;
+    POL.forEach(function(o){if(!o.ok)return;var pw=o.w*rbw,st=o.el.style;
+      st.width=pw+"px";st.left=(rbx+o.x*rbw-pw/2)+"px";st.top=(rby+o.y*rbh-pw*o.a/2)+"px";st.transform="rotate("+o.r+"deg)"});
+    // лапа: картинка — пальцы сверху, основание у нижнего края экрана; в покое видны только пальцы
+    var bry=vh/2+FY+sl*SC_END/2*cs+sw*SC_END/2*sn,rest=PAW.h*(RM?.62:.8),up=clamp(bry-PAW.h*.1-(vh-PAW.h),PAW.h*.08,rest-4);
+    var ps=pawBox.style;ps.width=PAW.w+"px";ps.left=PAW.left+"px";
+    ps.setProperty("--py-hide",(PAW.h+24)+"px");ps.setProperty("--py-rest",rest+"px");ps.setProperty("--py-up",up+"px");
+    if(RM){
+      view.style.height=Math.ceil(topPadRM+H+W*.3+Math.max(vh*.5,PAW.h+140))+"px";
+      var tr="translate("+vw/2+"px,"+topPadRM+"px)";
+      world.style.transform=tr;sheetLayer.style.transform=tr;objTop.style.transform=tr;sheetWrap.style.transform="none";lastWrap="none";
+      setWC(false);
+      pawBox.classList.remove("on","hit");pawBox.classList.toggle("show",pawOK);
+    }else view.style.height="";
+    stageTop=stage.offsetTop;stageH=stage.offsetHeight-STAIL;
+    frame();
+  }
+
+  /* ===== кадр по прокрутке ===== */
+  var lastWrap="",hlEl=null,okOn=false,pawShow=false,pawT=0,lastP=0,wcOn=false;
+  function setWC(on){if(on===wcOn)return;wcOn=on;world.classList.toggle("wc",on);sheetLayer.classList.toggle("wc",on)}
+  function setHL(y){var best=null,bd=1e9;
+    if(y!=null)for(var i=0;i<ROWPOS.length;i++){var dd=Math.abs(ROWPOS[i].c-y);if(dd<bd){bd=dd;best=ROWPOS[i].el}}
+    if(bd>W*.8)best=null;
+    if(best!==hlEl){if(hlEl)hlEl.classList.remove("hl");if(best)best.classList.add("hl");hlEl=best}}
+  var toTop=D.createElement("button");toTop.type="button";toTop.className="totop";toTop.setAttribute("aria-label","Наверх");
+  toTop.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg>';
+  D.body.appendChild(toTop);toTop.addEventListener("click",function(){window.scrollTo({top:0,behavior:RM?"auto":"smooth"})});
+  var topOn=false;
+  function setTop(on){if(on===topOn)return;topOn=on;toTop.classList.toggle("on",on)}
+  function setOk(on){if(on===okOn)return;okOn=on;okbar.classList.toggle("on",on);
+    if(!on&&okbar.contains(D.activeElement))D.activeElement.blur()}
+  function revealFrame(s,cy,p){
+    var i,e,sy,pr,j,n,wp,st,gate,q,outg=clamp((p-.79)/.06,0,1);   // в конце чтения всё со стола уходит, потом лист падает
+    for(i=0;i<REVS.length;i++){e=REVS[i];
+      sy=vh/2+s*(e.y-cy);
+      pr=clamp((vh*1.02-sy)/(vh*.2),0,1);                      // снимки и вещи проявляются у самого низа экрана и быстрее
+      gate=clamp((p-Math.min(e.i,14)*.004)/.05,0,1);
+      pr=Math.round(Math.min(pr,gate,1-outg)*50)/50;
+      if(pr===e.last)continue;e.last=pr;
+      q=pr*pr*(3-2*pr);
+      // предметы на столе не возникают из воздуха: выезжают из-за края экрана со своей стороны, сразу непрозрачные (opacity не трогаем)
+      var off=e.dir*(vw/(2*Math.min(s,s0))+e.hw*1.25+40)-e.x;
+      e.el.style.setProperty("--dx",(off*(1-q)).toFixed(1)+"px");e.el.style.visibility=pr<=0?"hidden":"";
+      if(!e.photo)e.el.style.setProperty("--dr",(-e.dir*4*(1-q)).toFixed(2)+"deg")}
+    // текст и рисунки на листе: один раз проявляются после интро, гаснут когда лист уходит на пол (без пересчёта слов в кадре)
+    var inkWant=p>=.003&&p<.8;
+    if(inkWant!==inkOn){inkOn=inkWant;
+      var ch=content.children,ci;
+      for(ci=0;ci<ch.length;ci++)ch[ci].style.transitionDelay=inkWant?Math.min(ci,12)*.05+"s":"0s";
+      content.classList.toggle("ink",inkWant);if(endQ)endQ.ph.style.opacity=inkWant?"":"0"}
+  }
+  function showAllReveal(){REVS.forEach(function(e){e.last=-1;e.el.style.removeProperty("--dx");e.el.style.removeProperty("--sc");e.el.style.removeProperty("--dr");e.el.style.opacity=""});content.classList.add("ink");inkOn=true;REV.forEach(function(e){e.last=-1;e.mx=1;if(e.fig){e.el.classList.add("in");return}
+    e.words.forEach(function(w){w.style.opacity=1});if(e.ic)e.ic.style.opacity=1;e.el.style.setProperty("--rv",1)})}
+  function frame(){
+    rafF=0;if(!W)return;
+    var ih=window.innerHeight,rawY=window.pageYOffset||root.scrollTop||0,sy,p;
+    // плавность: камера догоняет прокрутку (экспоненциальное сглаживание), рывки пальца и медленных кадров гасятся
+    if(RM||SY===null||Math.abs(rawY-SY)<.35||Math.abs(rawY-SY)>vh*3)SY=rawY;else{SY+=(rawY-SY)*SMOOTH;requestFrame()}
+    sy=SY;
+    if(RM){// без камеры: обычная прокрутка листа на столе
+      p=clamp(sy/Math.max(1,stageH-ih),0,1);lastP=p;showAllReveal();
+      if(p>.6)loadFinal();
+      setHL(sy+(ih+HDR)/2-stageTop-topPadRM);
+      setOk(sy+ih>stageTop+topPadRM+H*.85||p>.97);
+      setTop(p>.97);
+      return}
+    var rawP0=clamp((sy-stageTop-INTRO)/Math.max(1,stageH-ih-INTRO),0,1);
+    var ip=INTRO?clamp((sy-stageTop)/INTRO,0,1):1;
+    p=clamp((sy-stageTop-INTRO)/Math.max(1,stageH-ih-INTRO),0,1);
+    if(!TAIL.asked&&rawP0>.5)tailLoad();// кадры хвоста грузим, только когда читатель дошёл до середины листа (память телефона)
+    var qq=STAIL?clamp((sy-stageTop-stageH+ih)/STAIL,0,1):0,rawP=p,pe=tailStep(p),tailBusy=TAIL.on&&rawP>TAIL.A-.012&&rawP<TAIL.B+.015;p=pe;
+    var tilt=0;
+    if(INTRO&&ip<1){var te=clamp((ip-.46)/.54,0,1);te=te*te*(3-2*te);te=te*te*(3-2*te);tilt=TH0*(1-te)}
+    var pre=tilt>.02?"translate("+(vw/2)+"px,"+YC+"px) perspective("+PERSP+"px) rotateX("+tilt+"deg) translate("+(-vw/2)+"px,"+(-YC)+"px) ":"";
+    if(INTRO){var ton=tilt>.02;if(ton!==itOn){itOn=ton;floor.classList.toggle("intro",ton);itable.style.display=ton?"block":"none";tableW.style.visibility=ton?"hidden":"visible"}}
+    // верхняя шапка уезжает вверх вместе с надписью и возвращается, когда прокрутили назад к началу
+    if(INTRO){var shd=D.querySelector("header.sh");if(shd){var sh=clamp((ip-.27)/.1,0,1);sh=sh*sh*(3-2*sh);
+      if(sh!==SHH){SHH=sh;shd.style.transform=sh>0?"translate3d(0,"+(-sh*(HDR+26)).toFixed(1)+"px,0)":"";shd.style.opacity=sh>.98?"0":"";shd.style.pointerEvents=sh>.5?"none":"";shd.style.visibility=sh>.98?"hidden":""}}}
+    if(INTRO){var hw=hello.querySelectorAll(".w"),hj,hd;// слова шапки: вылетают сами по CSS при загрузке (не зависят от кадров камеры); дальше по скроллу уезжают вверх и гаснут
+      hello.style.display=ip<1?"block":"none";
+      if(!HELLO_ON){if(!HELLO_T0){HELLO_T0=performance.now();setTimeout(function(){HELLO_ON=true;requestFrame()},2300)}if(ip>.02)HELLO_ON=true}
+      if(HELLO_ON)for(hj=0;hj<hw.length;hj++){// гаснут в том же порядке, как появились
+        hd=Math.pow(clamp((ip-.31)/.07,0,1),2);   // надпись гаснет к ip≈.67, текст на листе начнётся только после ip=1: между ними около секунды прокрутки
+        hw[hj].style.opacity=(1-hd).toFixed(3);
+        hw[hj].style.transform="translateY("+(-hd*vh*.3-ip*vh*.03).toFixed(1)+"px) scale("+(1+hd*.03).toFixed(3)+")"}}
+    if(INTRO){// окно кухни и дымка ползут вверх вместе с линией горизонта; в конце уходят совсем
+      var yh=YC-PERSP/Math.tan(Math.max(tilt,.5)*Math.PI/180);
+      var tr=tilt*Math.PI/180,ye=YC+U_EDGE*Math.cos(tr)*PERSP/(PERSP-U_EDGE*Math.sin(tr));// дальний край стола на экране
+      kitchen.style.transform="translateY("+(ye-parseFloat(kitchen.style.height)+2)+"px)";
+      kitchen.style.visibility=tilt>.5?"visible":"hidden"}
+    var s,cy,e,ex=0,f=0;
+    if(p<.02){s=s0;cy=y0}
+    else if(p<.2){e=ease((p-.02)/.18);s=lerp(s0,1,e);cy=(vh/2-lerp(.22,TOPF,e)*vh)/s}
+    else if(p<.78){s=1;cy=lerp(y1,y2,(p-.2)/.58)}
+    else{e=ease((p-.78)/.1);s=lerp(1,s3,e);cy=lerp(y2,H/2,e)}
+    if(p>.8)ex=ease((p-.8)/.1)*EX;
+    if(p>.9)f=ease((p-.9)/.05);
+    if(TAIL.hold){ex=0;f=0}
+    setWC((p>.03&&p<.21)||(p>.77&&p<.97));// слой поднят только пока меняется масштаб
+    var tx=vw/2,ty=vh/2-s*cy;
+    world.style.transform=pre+"translate3d("+tx+"px,"+(ty-ex)+"px,0) scale("+s+")";
+    sheetLayer.style.transform=pre+"translate3d("+tx+"px,"+ty+"px,0) scale("+s+")";
+    objTop.style.transform=sheetLayer.style.transform;// вещи над листом идут за камерой листа (без подъёма стола)
+    revealFrame(s,cy,rawP);
+    var wt="none";
+    if(f>0){// падение на пол: покачивание, лист «удаляется» (меньше), ложится с поворотом
+      var sw=Math.sin(f*Math.PI*3)*(1-f),sw2=Math.sin(f*Math.PI*2.2+1)*(1-f),lift=Math.sin(f*Math.PI);
+      // лист отрывается от стола, раскачивается как бумага (наклоны по двум осям в перспективе), ложится на пол и чуть «оседает»
+      wt="perspective("+(vh*1.5)+"px) translate("+(sw*vw*.04)+"px,"+(FY*f)+"px) rotateX("+(sw2*16)+"deg) rotateY("+(sw*13)+"deg) rotate("+(sw*8+f*ROT_END)+"deg) scale("+(1+(SC_END-1)*f+.05*lift)+")"}
+    if(wt!==lastWrap){sheetWrap.style.transform=wt;lastWrap=wt;
+      // тень от листа: в полёте мягкая и далеко, на полу короткая и плотная
+      sheetWrap.style.filter=f>0&&f<1?"drop-shadow(0 "+(6+Math.sin(f*Math.PI)*vh*.05)+"px "+(8+Math.sin(f*Math.PI)*vh*.045)+"px rgba(30,16,6,"+(.3+.12*Math.sin(f*Math.PI))+"))":""}
+    if(rugOK){var rf=p>.8?ease((p-.8)/.1):0;// коврик на полу виден уже когда стол уезжает, до падения листа
+      polBox.style.opacity=rf;rug.style.opacity=rf;rug.style.transform="rotate("+RUG.rot+"deg) scale("+(1.12-.12*rf)+")"}
+    setHL(p>.2&&p<.78?cy+RL:null);
+    setOk(TAIL.on?rawP>TAIL.B:(p>.78&&!tailBusy));
+    setTop(STAIL?qq>.97:(p>.985&&!tailBusy));
+    if(p>.6)loadFinal();
+    lastP=p;
+    if(pawOK&&!RM)pawScroll(rawP>=.999&&!tailBusy?qq:-1);
+  }
+
+  /* ===== мяу (пасхалка): синтез через WebAudio, файлов нет. Контекст создаётся и возобновляется на жесте читателя;
+     играет на 1-м шлепке и дальше на каждом втором (счёт общий, шлепки по клику тоже), не чаще раза в 0.6 с,
+     не при скрытой вкладке, не при reduced-motion и не пока открыта шторка. Громкость ≤ 0.35, переключателя нет ===== */
+  var AC=null,swatN=0,meowAt=-1e9,GEST=["pointerdown","touchstart","touchend","click","keydown","wheel"];
+  // слушатели остаются: iOS может прервать контекст (звонок, блокировка), следующий жест возобновит его
+  var UNL=false;
+  function unlockAudio(){
+    try{
+      if(AC&&AC.state==="running"&&UNL)return;
+      if(!AC){var C=window.AudioContext||window.webkitAudioContext;if(!C)return;AC=new C()}
+      if(!UNL){
+        // iOS: тихий буфер внутри жеста открывает звук
+        var b=AC.createBuffer(1,1,22050),z=AC.createBufferSource();z.buffer=b;z.connect(AC.destination);z.start(0);UNL=true}
+      var p=AC.resume();if(p&&p.catch)p.catch(function(){});
+      meowLoad();
+    }catch(e){}
+  }
+  GEST.forEach(function(ev){window.addEventListener(ev,unlockAudio,{capture:true,passive:true})});
+  // пять настоящих мяуканий (CC0, Openverse: philsapphire, fthgurdy, d.n.audio.uk, steffcaffrey), случайно, подряд один и тот же не играет
+  var MEOW={buf:[],asked:false,last:-1};
+  function meowLoad(){
+    if(MEOW.asked||!AC)return;MEOW.asked=true;
+    for(var k=1;k<=5;k++)(function(k){
+      fetch("sounds/meow"+k+".mp3").then(function(r){return r.arrayBuffer()}).then(function(ab){
+        return new Promise(function(res,rej){AC.decodeAudioData(ab,res,rej)})}).then(function(b){MEOW.buf[k-1]=b}).catch(function(){})})(k)
+  }
+  try{var C0=window.AudioContext||window.webkitAudioContext;if(C0){AC=new C0();meowLoad()}}catch(e){AC=null}
+  function meow(g){
+    var now=performance.now();
+    if(!AC||D.hidden||RM||isOpen||now-meowAt<600)return;
+    // тап по лапе — жест: если звук ещё закрыт, открыть и сыграть сразу после resume
+    if(AC.state!=="running"){if(g){var pr=AC.resume();if(pr&&pr.then)pr.then(function(){if(AC.state==="running")meow(false)},function(){})}return}
+    meowLoad();
+    var have=[],i;for(i=0;i<5;i++)if(MEOW.buf[i]&&i!==MEOW.last)have.push(i);
+    if(!have.length){if(MEOW.buf.some(Boolean))have=[MEOW.last];else return}
+    meowAt=now;var ix=have[Math.floor(Math.random()*have.length)];MEOW.last=ix;
+    try{
+      var src=AC.createBufferSource(),g=AC.createGain();src.buffer=MEOW.buf[ix];
+      src.playbackRate.value=.95+Math.random()*.1;g.gain.value=.85;
+      src.connect(g);g.connect(AC.destination);src.start(0);
+      src.onended=function(){try{src.disconnect();g.disconnect()}catch(e){}};
+    }catch(e){}
+  }
+
+  /* ===== лапа играет с листом, пока читатель на финале: серия 4–5 шлепков (толчок листа) → пауза 3–5 с → снова, бесконечно ===== */
+  function pawPaused(){return D.hidden||isOpen}
+  function pawLoop(){}
+  // лапа управляется прокруткой: после падения листа каждый «оборот» скролла — кошка вылезает, шлёпает лист (толчок + мяу) и прячется.
+  // Толчки листа копятся: чем больше шлепков, тем дальше сдвинут лист; прокрутил назад — лист возвращается.
+  var PAWC=3,pawDone=0,pawVis=false,lastSwat=-1e9;
+  function pawEase(t){t=clamp(t,0,1);return t*t*(3-2*t)}
+  function pawScroll(q){
+    if(q<0||isOpen){if(pawVis){pawVis=false;pawBox.classList.remove("on","hit","sd");pawBox.style.transform="";pawBox.style.opacity="";nudge.style.transform=""}pawDone=0;return}
+    var x=q*PAWC,c=Math.min(PAWC-1,Math.floor(x)),u=q>=1?1:x-c,last=c===PAWC-1,
+        pe=u<.34?pawEase(u/.34):(u<.5?1:(last?1-.55*pawEase((u-.5)/.4):1-pawEase((u-.5)/.38))),slap=u>=.34&&u<.52,k=c+(u>=.34?1:0);
+    if(!pawVis){pawVis=true;pawBox.classList.add("sd")}
+    var hide=PAW.h+30,up=parseFloat(pawBox.style.getPropertyValue("--py-up"))||0;
+    pawBox.style.opacity=pe>.01?"1":"0";pawBox.style.translate="0 0";
+    pawBox.style.transform="translate3d(0,"+(hide+(up-hide)*pe).toFixed(1)+"px,0)";
+    pawBox.classList.toggle("on",pe>.05);
+    var hitNow=slap&&paw2OK;if(hitNow!==pawBox.classList.contains("hit"))pawBox.classList.toggle("hit",hitNow);
+    if(k>pawDone){pawDone=k;meow()}else if(k<pawDone)pawDone=k;
+    var kk=Math.min(k,PAWC),dx=-9*kk,dy=-4*kk,r=-2.2*kk;
+    nudge.style.transition="transform .5s cubic-bezier(.2,.8,.2,1)";nudge.style.transform=kk?"translate("+dx+"px,"+dy+"px) rotate("+r+"deg)":"";
+  }
+  // клик или тап по лапе: сразу шлепок с толчком листа (серия при этом продолжается и скоро кончается)
+  pawBox.addEventListener("click",function(){
+    if(RM||isOpen||!pawBox.classList.contains("on")||performance.now()-lastSwat<250)return;
+    lastSwat=performance.now();meow(true);if(paw2OK){pawBox.classList.add("hit");setTimeout(function(){pawBox.classList.remove("hit")},240)}
+  });
+  function nudgeSheet(){
+    if(!nudge.animate)return;
+    var dx=-(10+Math.random()*8),dy=-(3+Math.random()*5),r=-(3+Math.random()*2);// толчок снизу справа: влево-вверх, против часовой
+    var tf=function(k){return"translate("+(dx*k)+"px,"+(dy*k)+"px) rotate("+(r*k)+"deg)"};
+    nudge.animate([{transform:"none"},{transform:tf(1),offset:.22},{transform:tf(-.35),offset:.5},{transform:tf(.12),offset:.75},{transform:"none"}],{duration:600,easing:"ease-out"});
+  }
+
+  /* ===== события ===== */
+  window.addEventListener("scroll",requestFrame,{passive:true});
+  window.addEventListener("resize",function(){schedule(false)});
+  window.addEventListener("orientationchange",function(){schedule(true)});
+  D.addEventListener("DOMContentLoaded",function(){schedule(true)});// шапка шагов уже вставлена
+  window.addEventListener("load",function(){schedule(true);setTimeout(loadFinal,300)});
+  window.addEventListener("pageshow",function(e){if(e.persisted)schedule(true)});
+  D.addEventListener("visibilitychange",function(){if(!D.hidden&&pawShow&&!RM)pawLoop(700)});
+  if(D.fonts&&D.fonts.ready)D.fonts.ready.then(function(){schedule(true)});
+  if(mq){var onMq=function(){RM=mq.matches;if(RM)showAllReveal();clearTimeout(pawT);pawT=0;pawShow=false;pawBox.classList.remove("on","hit","show");schedule(true)};
+    if(mq.addEventListener)mq.addEventListener("change",onMq);else if(mq.addListener)mq.addListener(onMq)}
+  // фокус не должен прокручивать скрытый overflow сцены
+  view.addEventListener("scroll",function(){if(view.scrollTop||view.scrollLeft){view.scrollTop=0;view.scrollLeft=0}});
+  // Tab по блокам: камера подъезжает к блоку (блок на линии чтения)
+  content.addEventListener("focusin",function(e){
+    if(restoring||RM||isOpen)return;
+    var el=e.target.closest&&e.target.closest(".row.blk");if(!el||el._c==null)return;
+    var fv=true;try{fv=el.matches(":focus-visible")}catch(_){}
+    if(!fv)return;
+    var pp=.2+.58*clamp((el._c-RL-y1)/Math.max(1,y2-y1),0,1);
+    window.scrollTo(0,stageTop+INTRO+pp*(stageH-window.innerHeight-INTRO));
+  });
+  // интро-видео: нет файла или ошибка — страница работает без него (без лишней прокрутки)
+  layout(true);
+})();
+</script>
+</body>
+</html>
