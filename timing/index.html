@@ -454,33 +454,44 @@ body:not(.wide) .row.brk .s{white-space:nowrap}
     {f:"igrushka-mysh",w:.16,x:.17,y:1.04,r:18},{f:"nosok",w:.13,x:.88,y:1.05,r:-25}];
   /* ===== Flow-хвост, управляется ПРОКРУТКОЙ: кадры видео «стол → пол» листаются вперёд и назад вместе со скроллом (нет автозапуска).
      Фазы по p: до .86 — чтение, потом всё со стола улетает и лист чистый; .86….985 — кадры (p сглажен камерой); дальше — финал страницы и кошка. ===== */
-  var tailC=document.getElementById("tailc"),TAIL={on:false,ready:false,asked:false,src:"",fr:[],n:60,dir:"",pos:-1,op:-1,A:.89,B:.985,hold:false};
-  function tailWant(){return window.innerWidth>=window.innerHeight*1.25?"f16":"f9"}
+  var tailC=document.getElementById("tailc"),TAIL={on:false,ready:false,asked:false,src:"",fr:[],n:60,dir:"",pos:-1,op:-1,A:.85,B:.985,hold:false};
+  // видео-хвост снят в 9:16 (стол → пол сверху); на горизонтальном экране его нет, падение листа делает код
+  function tailWant(){return window.innerWidth>=window.innerHeight*1.25?"":"f9"}
   // кадры: вертикально 540×960 (final/tail9), горизонтально 960×540 (final/tail16); картинки грузятся везде, ничего не стартует само
-  // Видео-хвост (кадры final/tail9, tail16) отключён 19.10: не совпадал со сценой и был плохого качества; падение листа делает код
-  var TAIL_VIDEO=false;
+  // Видео-хвост 20.10: Flow (Omni 1.1 Flash, 9:16, 1080p), первый кадр = страница на p=.85, последний = финал страницы; кадры final/tail9 (720×1280)
+  var TAIL_VIDEO=true;
+  // кадры держим окном: в памяти только ближайшие к текущему (720×1280 × 60 кадров разом = ~220 МБ, телефону много)
   function tailLoad(){
     var want=tailWant();
-    if(!TAIL_VIDEO||!tailC||TAIL.src===want)return;
-    TAIL.asked=true;TAIL.ready=false;TAIL.on=false;TAIL.src=want;TAIL.fr=[];TAIL.pos=-1;
-    var land=want==="f16";tailC.width=land?768:432;tailC.height=land?432:768;TAIL.dir=land?"final/tail16/f":"final/tail9/f";
-    var left=TAIL.n,k;
-    for(k=1;k<=TAIL.n;k++)(function(k){var im=new Image();
-      im.onload=im.onerror=function(){if(--left===0&&TAIL.src===want){TAIL.ready=TAIL.fr[0]&&TAIL.fr[0].naturalWidth>0;schedule(true);requestFrame()}};
-      im.src=TAIL.dir+(k<10?"0":"")+k+".webp";TAIL.fr[k-1]=im})(k)
+    if(!TAIL_VIDEO||!tailC||!want||TAIL.src===want)return;
+    TAIL.asked=true;TAIL.ready=false;TAIL.on=false;TAIL.src=want;TAIL.fr=new Array(TAIL.n);TAIL.pos=-1;
+    tailC.width=720;tailC.height=1280;TAIL.dir="final/tail9/f";
+    tailEnsure(0,true)
   }
-  function tailDraw(i){var im=TAIL.fr[Math.max(0,Math.min(TAIL.n-1,i))];
-    if(im&&im.naturalWidth)tailC.getContext("2d").drawImage(im,0,0,tailC.width,tailC.height)}
-  // сцена под кадрами: пока листаем кадры — стол с чистым листом (.8), когда кадры дошли до пола — финал (1)
+  function tailUrl(k){return TAIL.dir+(k+1<10?"0":"")+(k+1)+".webp"}
+  function tailEnsure(i,first){
+    var k,lo=Math.max(0,i-4),hi=Math.min(TAIL.n-1,i+14),want=TAIL.src;
+    for(k=lo;k<=hi;k++)if(!TAIL.fr[k])(function(k){var im=new Image();TAIL.fr[k]=im;
+      im.onload=function(){if(TAIL.src!==want)return;if(first&&k===0){TAIL.ready=im.naturalWidth>0;schedule(true);requestFrame()}if(TAIL.pos>=0&&Math.abs(k-TAIL.pos)<=1)tailDraw(TAIL.pos)};
+      im.onerror=function(){if(TAIL.fr[k]===im)TAIL.fr[k]=null;if(first&&k===0){TAIL.ready=false}};
+      im.src=tailUrl(k)})(k);
+    for(k=0;k<TAIL.n;k++)if(TAIL.fr[k]&&(k<i-18||k>i+30)){TAIL.fr[k].onload=TAIL.fr[k].onerror=null;TAIL.fr[k].src="";TAIL.fr[k]=null}
+  }
+  function tailDraw(i){
+    i=Math.max(0,Math.min(TAIL.n-1,i));var d,im=null;
+    for(d=0;d<TAIL.n&&!im;d++){var a=TAIL.fr[i-d],b=TAIL.fr[i+d];
+      if(a&&a.complete&&a.naturalWidth)im=a;else if(b&&b.complete&&b.naturalWidth)im=b}
+    if(im)tailC.getContext("2d").drawImage(im,0,0,tailC.width,tailC.height)}
+  // сцена под кадрами: пока листаем кадры — кадр страницы p=.85 (первый кадр видео), когда кадры дошли до пола — финал (1)
   function tailStep(p){
     if(!TAIL.on){TAIL.hold=false;if(TAIL.op!==0){TAIL.op=0;tailC.style.opacity="0"}return p}
     var tp=clamp((p-TAIL.A)/(TAIL.B-TAIL.A),0,1),fi=Math.round(tp*(TAIL.n-1));
     var op=clamp((p-(TAIL.A-.012))/.012,0,1)*(1-clamp((p-TAIL.B)/.015,0,1));// сначала проявляется ровно на кадре чистого листа, в конце уходит, открывая финал страницы
-    if(fi!==TAIL.pos){TAIL.pos=fi;tailDraw(fi)}
+    if(fi!==TAIL.pos){TAIL.pos=fi;tailEnsure(fi,false);tailDraw(fi)}
     op=Math.round(op*100)/100;if(op!==TAIL.op){TAIL.op=op;tailC.style.opacity=String(op)}
     TAIL.hold=p<TAIL.B;
     // пока листаются кадры, сцена под ними стоит на «целый лист на столе»: камера отъезжает (p .78→.89 → кадр .88), стол и лист на месте
-    return p<TAIL.B?(p<.78?p:.78+(Math.min(p,TAIL.A)-.78)/(TAIL.A-.78)*.1):1}
+    return p<TAIL.B?Math.min(p,TAIL.A):1}
   var celOn=false,celTried=false,legacyAsked=false,legacyRug=false,polUrl="";
   function ensureLegacy(){
     if(legacyAsked)return;legacyAsked=true;
