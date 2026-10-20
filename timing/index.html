@@ -92,8 +92,11 @@ body.rm .view{position:relative}
 .photo img{display:block;width:100%;height:auto}
 /* полароид: белая рамка, широкий низ; за фигурами карандашный рисунок комнаты/улицы/зала/поля (fony/), фигуры поверх */
 /* полароид (Григорий 20.10): квадратный снимок, поля 5,5 % ширины по бокам и сверху, 24 % снизу — как Polaroid 600 (79×79 мм в рамке 88×107) */
-.photo{padding:calc(var(--pw,100px)*.055) calc(var(--pw,100px)*.055) calc(var(--pw,100px)*.24)!important;background:#fbfaf5}
-.photo img{aspect-ratio:1/1;object-fit:cover;object-position:50% 35%}
+.photo{--par:1;padding:calc(var(--pw,100px)*.05) calc(var(--pw,100px)*.05) calc(var(--pw,100px)*.22)!important;background:#161616;border-radius:calc(var(--pw,100px)*.012);
+  box-shadow:0 0 0 1px #000,calc(var(--W)*.004) calc(var(--W)*.009) calc(var(--W)*.016) rgba(40,20,5,.38)}
+.photo[data-cap]::before{content:attr(data-cap);position:absolute;left:0;right:0;bottom:calc(var(--pw,100px)*.045);text-align:center;font-family:"Kalissa",Georgia,serif;font-size:calc(var(--pw,100px)*.1);line-height:1;color:#f2efe6;transform:rotate(-1.5deg);white-space:nowrap}
+.photo.nocap::before{display:none}
+.photo img{aspect-ratio:var(--par);object-fit:contain}
 .photo img{background:#fff}
 /* рисунки внутри листа — прозрачные, без фона (Григорий 20.10); карандашный фон и рамка — только у фотокарточек на столе */
 .photo.onp{transition:opacity .9s ease-out}
@@ -153,7 +156,7 @@ body.rm figure.sk{opacity:1;transform:rotate(var(--r));transition:none}
 body.wide figure.sk{display:none}
 /* телефон: часть рисунков ушла снимками на стол; крупные стоят по центру листа, у первого танца низ растворяется (без обрезанных ног) */
 body:not(.wide) figure.sk.tbl{display:none}
-body:not(.wide) .photo.tbl{display:block;padding:calc(var(--W)*.012) calc(var(--W)*.012) calc(var(--W)*.04)}
+body:not(.wide) .photo.tbl{display:block}
 figure.sk.big{float:none;clear:both;margin-left:auto;margin-right:auto;margin-top:calc(var(--W)*.02)}
 figure.sk.fade img{-webkit-mask-image:linear-gradient(#000 58%,transparent 94%);mask-image:linear-gradient(#000 58%,transparent 94%)}
 
@@ -429,6 +432,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     "sketch-music-combat-subzero-v2.webp":{table:1,anchor:"Music Combat",sc:1.2,dx:.1,dy:.3},"sketch-prostavitsya.webp":{w:98,big:1,plain:1},"sketch-kalyan.webp":{table:1},
     "sketch-kosha-ochistitel-bez-rasteniya.webp":{table:1},
     "sketch-fikus-gost.webp":{table:1},"sketch-nastolka.webp":{table:1},"sketch-ne-edet.webp":{table:1},"sketch-fikus.webp":{w:88,corner:1},"sketch-spasatel.webp":{table:1}};
+  var CAP={};// подписи на нижнем поле снимка: ключ — имя файла рисунка, значение — короткая строка (пусто — без подписи)
   var BGF={"sketch-hondovod-2.webp":"ulica","sketch-spasatel.webp":"ulica","sketch-ne-edet.webp":"ulica","sketch-fikus.webp":"ulica","sketch-prostavitsya.webp":"ulica",
     "sketch-futbol.webp":"futbol","sketch-kosha-tanec.webp":"zal","sketch-music-combat-subzero-v2.webp":"zal"};// остальное — гостиная
   var SK=[],GROUPS=[],BLK=[],lastSide="r",prevFig=false,lastBlk=null,SZ=[.46,.34,.5,.4,.36,.48,.42,.32];// размеры картинок в доле ширины поля листа
@@ -443,11 +447,12 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     var own=lastBlk||sub,gr=GROUPS.length&&GROUPS[GROUPS.length-1].blk===own?GROUPS[GROUPS.length-1]:null;
     if(!gr){var gp=D.createElement("i");gp.className="gap";gp.setAttribute("aria-hidden","true");own.parentNode.insertBefore(gp,own);gr={blk:own,gap:gp,qs:[],c:0,h:0};GROUPS.push(gr)}
     var mob=MOB[r.file]||{};if(mob.table){f.classList.add("tbl");ph.classList.add("tbl")}if(mob.big)f.classList.add("big");if(mob.corner)f.classList.add("corner");if(mob.fade)f.classList.add("fade");
-    var n=SK.length,q={mob:mob,blk:own,fig:f,ph:ph,pref:r.side==="l"?-1:r.side==="r"?1:0,rot:(n%2?-1:1)*(2+n%3),a:.8,dead:false,sz:SZ[n%SZ.length]};SK.push(q);gr.qs.push(q);
+    var n=SK.length,q={mob:mob,blk:own,fig:f,ph:ph,pref:r.side==="l"?-1:r.side==="r"?1:0,rot:(n%2?-1:1)*(2+n%3),a:.8,par:1.25,dead:false,sz:SZ[n%SZ.length]};SK.push(q);gr.qs.push(q);
     f.style.setProperty("--r",(side==="l"?-1:1)*(1.5+n%3*.5)+"deg");f.style.setProperty("--sw",Math.round(q.sz*100));
     loadChain(im,["sketchi-lica-crop/"+r.file,"sketchi-crop/"+r.file],// полароид: рисунок на карандашном фоне (sketchi-pol/)
       
-      function(){q.a=im.naturalHeight/im.naturalWidth||q.a;var pol="sketchi-pol/"+r.file.replace(/\.\w+$/,"")+".jpg",src0=im.currentSrc||im.src;pi.onerror=function(){pi.onerror=null;pi.src=src0};pi.src=pol;
+      function(){q.a=im.naturalHeight/im.naturalWidth||q.a;var pol="sketchi-pol/"+r.file.replace(/\.\w+$/,"")+".jpg",src0=im.currentSrc||im.src;pi.onerror=function(){pi.onerror=null;pi.src=src0};q.par=Math.min(2.3,Math.max(.75,1/q.a));ph.style.setProperty("--par",q.par);if(CAP[r.file])ph.dataset.cap=CAP[r.file];
+        pi.onload=function(){q.par=Math.min(2.3,Math.max(.75,pi.naturalWidth/pi.naturalHeight));ph.style.setProperty("--par",q.par);schedule(true)};pi.src=pol;
         // у каждого свой размер: доля ширины поля из ряда SZ, высокие рисунки уже, чтобы площадь была примерно равной
         f.style.setProperty("--sw",q.mob.w?q.mob.w:Math.round(clamp(q.sz*Math.sqrt(.65/q.a),.27,.5)*100));schedule(true)},// снимок берёт уже найденный адрес
       function(){q.dead=true;f.classList.add("hidden");ph.classList.add("hidden");schedule(true)});
@@ -659,7 +664,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
         if(r.x<o.x+o.w+gap&&r.x+r.w+gap>o.x&&r.y<o.y+o.h+gap&&r.y+r.h+gap>o.y&&(!hit||o.y+o.h>hit.y+hit.h))hit=o}
       if(!hit)break;r.y=hit.y+hit.h+gap}
     return r}
-  function photoBox(q,pw){var h=pw*1.185,t=Math.abs(q.rot)*Math.PI/180,c=Math.cos(t),s=Math.sin(t);return{bw:pw*c+h*s,bh:pw*s+h*c}}
+  function photoBox(q,pw){var h=pw*(.27+.9/(q.par||1/q.a)),t=Math.abs(q.rot)*Math.PI/180,c=Math.cos(t),s=Math.sin(t);return{bw:pw*c+h*s,bh:pw*s+h*c}}
 
   /* снимки на широком экране. Колонка у каждого края листа (от .55W наружу, под бумагу не заходят).
      Снимок по центру своего блока; если место занято — ближайшее свободное выше или ниже, но так,
@@ -708,16 +713,17 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     for(;;){r=placePhotos(pw,Hc);if(!best||r.sum<best.sum-.5)best=r;
       if(r.sum<=W*.06||pw<=W*.42+.5)break;pw=Math.max(W*.42,pw-W*.02)}
     GROUPS.forEach(function(gr,i){gr.gap.style.height=best.gaps[i]>.5?best.gaps[i]+"px":""});
-    var x0=W*.55,rects=[],right=0,pad=best.pw*.024;
-    // хаос: у каждого снимка свой угол (±5…22°), сдвиг наружу и по высоте; число от номера, поэтому раскладка не прыгает
+    var x0=W*.57,rects=[],right=0,pad=best.pw*.024;
+    // хаос: у каждого снимка свой угол (±2…9°), сдвиг наружу и по высоте; число от номера, поэтому раскладка не прыгает
     var jr=function(k,m){var v=Math.sin((k+1)*12.9898+m*78.233)*43758.5453;return v-Math.floor(v)};
     best.list.forEach(function(o,k){var st=o.q.ph.style,bw=o.b.bw,out=(jr(k,1)*.42-.1)*best.pw,dy=(jr(k,2)-.5)*best.pw*.3+(o.s<0?-.4:.4)*best.pw,// левые чуть выше, правые ниже: между снимками остаются просветы для вещей
         
-        rot=(jr(k,3)<.5?-1:1)*(5+jr(k,4)*17),x=o.s<0?-(x0+bw)-out:x0+out,t=o.t+dy;o.q.rot=rot;
-      st.width=best.pw+"px";st.setProperty("--pw",best.pw+"px");
-      st.left=(x+bw/2)+"px";st.top=(t+o.b.bh/2)+"px";st.transform="translate(calc(-50% + var(--dx,0px)),-50%) rotate("+rot+"deg)";
+        rot=(jr(k,3)<.5?-1:1)*(2+jr(k,4)*7),ar=Math.abs(rot)*Math.PI/180,hh=best.pw*(.27+.9/(o.q.par||1/o.q.a)),// коробка по настоящему углу
+        bh=best.pw*Math.sin(ar)+hh*Math.cos(ar),bw=best.pw*Math.cos(ar)+hh*Math.sin(ar),cy=o.t+dy+o.b.bh/2,x=o.s<0?-(x0+bw)-out:x0+out,t=cy-bh/2;o.q.rot=rot;
+      st.width=best.pw+"px";st.setProperty("--pw",best.pw+"px");o.q.ph.classList.toggle("nocap",best.pw<110);
+      st.left=(x+bw/2)+"px";st.top=cy+"px";st.transform="translate(calc(-50% + var(--dx,0px)),-50%) rotate("+rot+"deg)";
       var m=best.pw*.1,inner=o.s<0?-x0:x0,cx0=o.s<0?x-m:Math.min(inner,x)-m,cx1=o.s<0?-x0+m:x+bw+m;// коридор от края листа до снимка: вещи сюда не ставим
-      rects.push({x:cx0,y:t-m,w:cx1-cx0,h:o.b.bh+2*m});right=Math.max(right,(o.s<0?x0+out:x0+out)+bw);
+      rects.push({x:cx0,y:t-m,w:cx1-cx0,h:bh+2*m});right=Math.max(right,(o.s<0?x0+out:x0+out)+bw);
     });
     return{rects:rects,right:right}}
   // вещи: цели по высоте — равные интервалы по всей длине листа, стороны чередуются; та же проверка пересечений, что у снимков
@@ -738,19 +744,21 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     // чередование: вещь i стоит в промежутке между двумя соседними снимками и с противоположной от них стороны (фото → вещь → фото → вещь)
     var ph=rects.slice(0,P).map(function(r){return{cy:r.y+r.h/2,sd:(r.x+r.w/2)<0?-1:1}}).sort(function(a,b){return a.cy-b.cy}),G=ph.length-1;
     live.forEach(function(o,i){
-      var side=i%2?1:-1,out=false,ideal=start+i*step,best=null,tol=Math.max(W*.8,step*2);
+      var side=i%2?1:-1,out=false,ideal=start+i*step,best=null,tol=step*.6;
       // равномерно по длине листа, стороны по очереди (Григорий 20.10: раньше вещи садились в просветы между снимками и сбивались в кучу)
       if(o.fix){side=o.fix.s;ideal=H*o.fix.at}
       // порядок попыток: своя сторона (своя полоса, другая полоса), затем противоположная
       // не влезло — сначала тот же размер поверх снимка (как в жизни: вещь лежит на фото), лишь потом поменьше, потом прячем
-      [[1,0],[.82,0],[.66,0],[.52,0]].forEach(function(ff){var fct=ff[0];if(best)return;
+      [[1,0]].forEach(function(ff){// размер не ужимаем (правило SITE-ALL-SCREENS) и на снимки не кладём (Григорий 20.10): нет места — вещь прячется
+      var fct=ff[0];if(best)return;
       [[side,out],[side,!out],[-side,out],[-side,!out]].forEach(function(t){
         if(best&&best.d<=tol)return;
         var s=t[0],isOut=t[1];if(!wide&&isOut)return;
         var w=o.w*W*fct,a=Math.abs(o.r)*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a),x0=(isOut?xout:xin)+o.j*W;
         var bw=w*cs+w*o.a*sn;
         // реальный размер не ужимаем под полосу (Григорий 20.10): длинная вещь может уйти за край экрана, как макбук
-        var bh=w*sn+w*o.a*cs,x=s<0?-(x0+bw):x0,f=nearFree(ff[1]||o.id==="kalyan"||o.id==="raketki"?rects.slice(P):rects,x,bw,bh,ideal-bh/2,-W*.1,Math.max(-W*.1,H-bh*.6),g);
+        var bh=w*sn+w*o.a*cs,x=s<0?-(x0+bw):x0;if(wide&&(o.id==="otkrytka"||o.id==="klyuch")){var vw2=D.documentElement.clientWidth;x=s<0?Math.max(x,-vw2/2+6):Math.min(x,vw2/2-6-bw)}// не за край экрана (дата открытки целиком) — до проверки места, чтобы не лечь на снимок; на телефоне нет: лист во всю ширину, легла бы на текст
+        var f=nearFree(ff[1]?rects.slice(P):rects,x,bw,bh,ideal-bh/2,-W*.1,Math.max(-W*.1,H-bh*.6),g);
         if(f&&(!best||f.d<best.d))best={s:s,x:x,y:f.y,w:w,bw:bw,bh:bh,d:f.d,ext:x0+bw}})});
       var st=o.el.style;
       if(!best){st.display="none";return}
@@ -792,7 +800,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
       var pr=layoutPhotos(pwMax,Hc);rects=pr.rects;phRight=pr.right}
     else{// телефон: снимки лежат у краёв листа сверху (поверх рваного края бумаги), целиком видны; по сторонам по очереди, ровно по длине листа;
       // свой блок у каждого (Music Combat — у «Music Combat»), «end» — на пустой бумаге в самом конце
-      var vis=Math.max(30,(vw-W)/2*.94),ov=W*.1,pw0=Math.round(vis+ov),items=[],last={"-1":-1e9,"1":-1e9},gp=W*.04;
+      var vis=Math.max(30,(vw-W)/2*.94),ov=W*.06,pw0=Math.round(vis+ov),items=[],last={"-1":-1e9,"1":-1e9},gp=W*.04;
       GROUPS.forEach(function(gr){gr.h=gr.blk.offsetHeight;gr.c=gr.blk.offsetTop+gr.h/2});
       endQ=null;
       SK.forEach(function(q){if(q.dead||!q.mob.table)return;q.ph.classList.remove("onp");
@@ -801,8 +809,8 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
         items.push({q:q,y:b.offsetTop+b.offsetHeight/2+(q.mob.dy||0)*W})});
       items.sort(function(a,b){return a.y-b.y});
       // снимок одного размера на всех экранах (Григорий 20.10: «размеры как в жизни»): .42 листа ≈ 12,6 см, как на широком экране; уже — только если не влезает полоса у края
-      items.forEach(function(o,tn){var q=o.q,sd=tn%2?1:-1,pw=Math.round(Math.min(pw0,W*.42)*(q.mob.sc||1)),out=Math.min(W/2+vis,W/2-ov+pw),h=pw*1.185,rot=(tn%2?-1:1)*(3+tn*2%5),t=Math.max(o.y,last[sd]+h/2+gp);
-        last[sd]=t+h/2;var st=q.ph.style;st.width=pw+"px";st.setProperty("--pw",pw+"px");st.left=(sd*(out-pw/2)+(q.mob.dx||0)*W)+"px";st.top=t+"px";
+      items.forEach(function(o,tn){var q=o.q,sd=tn%2?1:-1,pw=Math.round(Math.min(pw0,W*.42)*(q.mob.sc||1)),out=Math.min(W/2+vis,W/2-ov+pw),h=pw*(.27+.9/(q.par||1/q.a)),rot=(tn%2?-1:1)*(3+tn*2%5),t=Math.max(o.y,last[sd]+h/2+gp);
+        last[sd]=t+h/2;var st=q.ph.style;st.width=pw+"px";st.setProperty("--pw",pw+"px");q.ph.classList.toggle("nocap",pw<110);st.left=(sd*(out-pw/2)+(q.mob.dx||0)*W)+"px";st.top=t+"px";
         st.transform="translate(calc(-50% + var(--dx,0px)),-50%) rotate("+rot+"deg)";objTop.appendChild(q.ph);
         rects.push({x:sd<0?-out:out-pw+(q.mob.dx||0)*W,y:t-h/2,w:pw,h:h})})}
     var k=W/P.bw;
