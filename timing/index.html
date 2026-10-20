@@ -938,7 +938,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
       p=clamp(sy/Math.max(1,stageH-ih),0,1);lastP=p;showAllReveal();
       if(p>.6)loadFinal();
       setHL(sy+(ih+HDR)/2-stageTop-topPadRM);
-      setOk(sy+ih>stageTop+topPadRM+H*.85||p>.97);
+      setOk(sy+ih>stageTop+topPadRM+H*.98||p>.97);
       setTop(p>.97);
       return}
     var rawP0=clamp((sy-stageTop-INTRO)/Math.max(1,stageH-ih-INTRO),0,1);
