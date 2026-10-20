@@ -91,7 +91,9 @@ body.rm .view{position:relative}
   box-shadow:calc(var(--W)*.006) calc(var(--W)*.014) calc(var(--W)*.03) rgba(40,20,5,.45)}
 .photo img{display:block;width:100%;height:auto}
 /* полароид: белая рамка, широкий низ; за фигурами карандашный рисунок комнаты/улицы/зала/поля (fony/), фигуры поверх */
-.photo{padding:calc(var(--W)*.022) calc(var(--W)*.022) calc(var(--W)*.075)!important;background:#fbfaf5}
+/* полароид (Григорий 20.10): квадратный снимок, поля 5,5 % ширины по бокам и сверху, 24 % снизу — как Polaroid 600 (79×79 мм в рамке 88×107) */
+.photo{padding:calc(var(--pw,100px)*.055) calc(var(--pw,100px)*.055) calc(var(--pw,100px)*.24)!important;background:#fbfaf5}
+.photo img{aspect-ratio:1/1;object-fit:cover;object-position:50% 35%}
 .photo img{background:#fff}
 /* рисунки внутри листа — прозрачные, без фона (Григорий 20.10); карандашный фон и рамка — только у фотокарточек на столе */
 .photo.onp{transition:opacity .9s ease-out}
@@ -377,10 +379,8 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
       F={chakchak:"chak-chak",macbook:"macbook-novyj",zenit2:"zenit-2"},J=[0,.03,.05,.02,.04,.01];
     window.__REAL={SHEET_CM:SHEET_CM,CM:CM,VIS:VIS};
     // порядок чередует вещи: угли, щипцы и табак (кальянное) не рядом; ракетки — вдоль листа слева внизу (заполняют низ, Григорий 20.10)
-    return[["kalyan",12,0],["zenit",-14,1],["kasseta",-7,0],["chakchak",-6,0],["ugli",-12,1],["macbook",-7,1],["pivo",9,0],
-      ["tabak",14,0],["tarelka",10,0],["shchipcy",17,1],["rasteniye",-8,0,-.1],["zenit2",8,0],["raketki",4,0,0,{s:-1,at:1}],
-      // ключи от Honda (покупка машины) и открытка «Ленинград» (Никита оттуда) — слева, выбор Григория 20.10
-      ["klyuch",-14,0,0,{s:-1,at:.3}],["otkrytka",7,0,0,{s:-1,at:.6}]].map(function(a,i){
+    return[["raketki",4,0,0,{s:-1,at:1}],["kalyan",12,0],["zenit",-14,1],["kasseta",-7,0],["klyuch",-14,0],["chakchak",-6,0],["ugli",-12,1],["macbook",-7,1],["pivo",9,0],
+      ["tabak",14,0],["otkrytka",7,0],["tarelka",10,0],["shchipcy",17,1],["rasteniye",-8,0,-.1],["zenit2",8,0]].map(function(a,i){
       return{id:a[0],f:F[a[0]]||a[0],w:CM[a[0]]/SHEET_CM/VIS[a[0]],r:a[1],m:a[2],j:a[3]!=null?a[3]:J[i%6],fix:a[4]||null}})})();
   OBJ.forEach(function(o){var im=D.createElement("img");im.className="obj";im.alt="";o.el=im;o.a=1;world.appendChild(im);
     if(o.m)im.style.setProperty("--fx","-1");// у зеркальной вещи тень остаётся с той же стороны
@@ -577,11 +577,11 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
       if(!tot){celTried=true;ensureLegacy()}}).catch(function(){celTried=true;ensureLegacy()});
     else{celTried=true;ensureLegacy()}
     // лапа: нет файлов → прячем молча
-    loadChain(paw,["final/lapa-dl-1.webp","final/lapa-dl-1.webp","final/lapa-1-real.webp","final/lapa-1-real.webp"],function(){
+    loadChain(paw,["final/lapa-1-real.webp","final/lapa-1-real.webp"],function(){
       pawOK=true;pawA=paw.naturalHeight/paw.naturalWidth||pawA;pawBox.hidden=false;schedule(true);
       try{var lc=D.createElement("canvas"),lw=paw.naturalWidth,lh=Math.round(paw.naturalHeight*.12);lc.width=lw;lc.height=lh;
         lc.getContext("2d").drawImage(paw,0,paw.naturalHeight-lh-2,lw,lh,0,0,lw,lh);var lg=D.createElement("div");lg.className="leg";lg.style.backgroundImage="url("+lc.toDataURL("image/webp",.8)+")";pawBox.appendChild(lg)}catch(_){}
-      loadChain(paw2,["final/lapa-dl-2.webp","final/lapa-dl-2.webp","final/lapa-2-real.webp","final/lapa-2-real.webp"],function(){paw2OK=true},function(){paw2OK=false;paw2.classList.add("hidden")});
+      loadChain(paw2,["final/lapa-2-real.webp","final/lapa-2-real.webp"],function(){paw2OK=true},function(){paw2OK=false;paw2.classList.add("hidden")});
     },function(){pawOK=false;pawBox.hidden=true});
   }
 
@@ -659,7 +659,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
         if(r.x<o.x+o.w+gap&&r.x+r.w+gap>o.x&&r.y<o.y+o.h+gap&&r.y+r.h+gap>o.y&&(!hit||o.y+o.h>hit.y+hit.h))hit=o}
       if(!hit)break;r.y=hit.y+hit.h+gap}
     return r}
-  function photoBox(q,pw){var pad=pw*.024,h=(pw-2*pad)*q.a+pad+pw*.07,t=Math.abs(q.rot)*Math.PI/180,c=Math.cos(t),s=Math.sin(t);return{bw:pw*c+h*s,bh:pw*s+h*c}}
+  function photoBox(q,pw){var h=pw*1.185,t=Math.abs(q.rot)*Math.PI/180,c=Math.cos(t),s=Math.sin(t);return{bw:pw*c+h*s,bh:pw*s+h*c}}
 
   /* снимки на широком экране. Колонка у каждого края листа (от .55W наружу, под бумагу не заходят).
      Снимок по центру своего блока; если место занято — ближайшее свободное выше или ниже, но так,
@@ -714,7 +714,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     best.list.forEach(function(o,k){var st=o.q.ph.style,bw=o.b.bw,out=(jr(k,1)*.42-.1)*best.pw,dy=(jr(k,2)-.5)*best.pw*.3+(o.s<0?-.4:.4)*best.pw,// левые чуть выше, правые ниже: между снимками остаются просветы для вещей
         
         rot=(jr(k,3)<.5?-1:1)*(5+jr(k,4)*17),x=o.s<0?-(x0+bw)-out:x0+out,t=o.t+dy;o.q.rot=rot;
-      st.width=best.pw+"px";st.padding=pad+"px "+pad+"px "+(best.pw*.07)+"px";
+      st.width=best.pw+"px";st.setProperty("--pw",best.pw+"px");
       st.left=(x+bw/2)+"px";st.top=(t+o.b.bh/2)+"px";st.transform="translate(calc(-50% + var(--dx,0px)),-50%) rotate("+rot+"deg)";
       var m=best.pw*.1,inner=o.s<0?-x0:x0,cx0=o.s<0?x-m:Math.min(inner,x)-m,cx1=o.s<0?-x0+m:x+bw+m;// коридор от края листа до снимка: вещи сюда не ставим
       rects.push({x:cx0,y:t-m,w:cx1-cx0,h:o.b.bh+2*m});right=Math.max(right,(o.s<0?x0+out:x0+out)+bw);
@@ -739,18 +739,18 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     var ph=rects.slice(0,P).map(function(r){return{cy:r.y+r.h/2,sd:(r.x+r.w/2)<0?-1:1}}).sort(function(a,b){return a.cy-b.cy}),G=ph.length-1;
     live.forEach(function(o,i){
       var side=i%2?1:-1,out=false,ideal=start+i*step,best=null,tol=Math.max(W*.8,step*2);
-      if(G>0){var gi=Math.min(G-1,Math.round(i*(G-1)/Math.max(1,n-1)));ideal=(ph[gi].cy+ph[gi+1].cy)/2;side=-ph[gi].sd}
+      // равномерно по длине листа, стороны по очереди (Григорий 20.10: раньше вещи садились в просветы между снимками и сбивались в кучу)
       if(o.fix){side=o.fix.s;ideal=H*o.fix.at}
       // порядок попыток: своя сторона (своя полоса, другая полоса), затем противоположная
       // не влезло — сначала тот же размер поверх снимка (как в жизни: вещь лежит на фото), лишь потом поменьше, потом прячем
-      [[1,0],[1,1],[.82,0],[.66,0],[.52,0]].forEach(function(ff){var fct=ff[0];if(best)return;
+      [[1,0],[.82,0],[.66,0],[.52,0]].forEach(function(ff){var fct=ff[0];if(best)return;
       [[side,out],[side,!out],[-side,out],[-side,!out]].forEach(function(t){
         if(best&&best.d<=tol)return;
         var s=t[0],isOut=t[1];if(!wide&&isOut)return;
         var w=o.w*W*fct,a=Math.abs(o.r)*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a),x0=(isOut?xout:xin)+o.j*W;
         var bw=w*cs+w*o.a*sn;
         // реальный размер не ужимаем под полосу (Григорий 20.10): длинная вещь может уйти за край экрана, как макбук
-        var bh=w*sn+w*o.a*cs,x=s<0?-(x0+bw):x0,f=nearFree(ff[1]||o.id==="kalyan"||o.id==="rasteniye"||o.id==="klyuch"||o.id==="otkrytka"?rects.slice(P):rects,x,bw,bh,ideal-bh/2,-W*.1,Math.max(-W*.1,H-bh*.6),g);
+        var bh=w*sn+w*o.a*cs,x=s<0?-(x0+bw):x0,f=nearFree(ff[1]||o.id==="kalyan"||o.id==="raketki"?rects.slice(P):rects,x,bw,bh,ideal-bh/2,-W*.1,Math.max(-W*.1,H-bh*.6),g);
         if(f&&(!best||f.d<best.d))best={s:s,x:x,y:f.y,w:w,bw:bw,bh:bh,d:f.d,ext:x0+bw}})});
       var st=o.el.style;
       if(!best){st.display="none";return}
@@ -801,8 +801,8 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
         items.push({q:q,y:b.offsetTop+b.offsetHeight/2+(q.mob.dy||0)*W})});
       items.sort(function(a,b){return a.y-b.y});
       // снимок одного размера на всех экранах (Григорий 20.10: «размеры как в жизни»): .42 листа ≈ 12,6 см, как на широком экране; уже — только если не влезает полоса у края
-      items.forEach(function(o,tn){var q=o.q,sd=tn%2?1:-1,pw=Math.round(Math.min(pw0,W*.42)*(q.mob.sc||1)),out=Math.min(W/2+vis,W/2-ov+pw),h=(pw*.976)*q.a+pw*.052,rot=(tn%2?-1:1)*(3+tn*2%5),t=Math.max(o.y,last[sd]+h/2+gp);
-        last[sd]=t+h/2;var st=q.ph.style;st.width=pw+"px";st.left=(sd*(out-pw/2)+(q.mob.dx||0)*W)+"px";st.top=t+"px";
+      items.forEach(function(o,tn){var q=o.q,sd=tn%2?1:-1,pw=Math.round(Math.min(pw0,W*.42)*(q.mob.sc||1)),out=Math.min(W/2+vis,W/2-ov+pw),h=pw*1.185,rot=(tn%2?-1:1)*(3+tn*2%5),t=Math.max(o.y,last[sd]+h/2+gp);
+        last[sd]=t+h/2;var st=q.ph.style;st.width=pw+"px";st.setProperty("--pw",pw+"px");st.left=(sd*(out-pw/2)+(q.mob.dx||0)*W)+"px";st.top=t+"px";
         st.transform="translate(calc(-50% + var(--dx,0px)),-50%) rotate("+rot+"deg)";objTop.appendChild(q.ph);
         rects.push({x:sd<0?-out:out-pw+(q.mob.dx||0)*W,y:t-h/2,w:pw,h:h})})}
     var k=W/P.bw;
@@ -1070,7 +1070,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   var MEOW={buf:[],asked:false,last:-1};
   function meowLoad(){
     if(MEOW.asked||!AC)return;MEOW.asked=true;
-    for(var k=1;k<=5;k++)(function(k){
+    for(var k=1;k<=1;k++)(function(k){// одно мяуканье (Григорий 20.10: «мяуканье одно»), прежняя лапа lapa-*-real вместо длинной lapa-dl
       fetch("sounds/meow"+k+".mp3").then(function(r){return r.arrayBuffer()}).then(function(ab){
         return new Promise(function(res,rej){AC.decodeAudioData(ab,res,rej)})}).then(function(b){MEOW.buf[k-1]=b}).catch(function(){})})(k)
   }
