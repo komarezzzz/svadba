@@ -217,7 +217,8 @@ figure.sk.corner{float:right;clear:none;margin-top:calc(var(--W)*.02);margin-rig
 .ic{position:static;display:inline-block;vertical-align:-.2em;margin-right:.4em}
 .row.brk .t,.row.brk .s{display:inline}
 .row.brk .t{margin-right:.7em}
-.row.brk .s{white-space:nowrap}
+.row.brk .s{white-space:normal}
+.row.brk .bt{white-space:nowrap}
 /* телефон: картинки меньше и заходят на поля листа */
 @media (max-width:520px){
   figure.sk{--ks:.92;--mo:-.075}
@@ -455,7 +456,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     if(r.kind==="end"){var en=D.createElement("div");en.className="endnote";var eb=D.createElement("b");eb.textContent=r.text||"";en.appendChild(eb);content.appendChild(en);en._fig=1;lastBlk=en;prevFig=false;return}
     prevFig=false;
     var d=D.createElement("div"),t=D.createElement("div"),s=D.createElement("div");t.className="t";s.className="s";t.textContent=r.time||"";d.appendChild(t);d.appendChild(s);
-    if(r.kind==="pause"){newGrp=true;d.className="row brk";s.appendChild(dancers());s.appendChild(D.createTextNode(r.text||""));content.appendChild(d);return}
+    if(r.kind==="pause"){newGrp=true;d.className="row brk";s.appendChild(dancers());var bt=D.createElement("span");bt.className="bt";bt.textContent=r.text||"";s.appendChild(bt);content.appendChild(d);return}
     if(newGrp){var bn=D.createElement("div");bn.className="bn";bn.textContent="Блок "+grpN;content.appendChild(bn);grpN++;newGrp=false}
     d.className="row blk "+(r.cat||"");d._r=r;
     var ic=iconFor(r);s.appendChild(ic.el);if(ic.wide)d.classList.add("icw");
@@ -738,14 +739,15 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
       if(G>0){var gi=Math.min(G-1,Math.round(i*(G-1)/Math.max(1,n-1)));ideal=(ph[gi].cy+ph[gi+1].cy)/2;side=-ph[gi].sd}
       if(o.fix){side=o.fix.s;ideal=H*o.fix.at}
       // порядок попыток: своя сторона (своя полоса, другая полоса), затем противоположная
-      [1,.82,.66,.52].forEach(function(fct){if(best)return;   // не влезло — пробуем поменьше, лишь потом прячем
+      // не влезло — сначала тот же размер поверх снимка (как в жизни: вещь лежит на фото), лишь потом поменьше, потом прячем
+      [[1,0],[1,1],[.82,0],[.66,0],[.52,0]].forEach(function(ff){var fct=ff[0];if(best)return;
       [[side,out],[side,!out],[-side,out],[-side,!out]].forEach(function(t){
         if(best&&best.d<=tol)return;
         var s=t[0],isOut=t[1];if(!wide&&isOut)return;
         var w=o.w*W*fct,a=Math.abs(o.r)*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a),x0=(isOut?xout:xin)+o.j*W;
         var bw=w*cs+w*o.a*sn;
-        if(wide&&!isOut&&bw>cap-o.j*W){w*=Math.max(.2,(cap-o.j*W)/bw);bw=w*cs+w*o.a*sn}
-        var bh=w*sn+w*o.a*cs,x=s<0?-(x0+bw):x0,f=nearFree(o.id==="kalyan"?rects.slice(P):rects,x,bw,bh,ideal-bh/2,-W*.1,Math.max(-W*.1,H-bh*.6),g);
+        // реальный размер не ужимаем под полосу (Григорий 20.10): длинная вещь может уйти за край экрана, как макбук
+        var bh=w*sn+w*o.a*cs,x=s<0?-(x0+bw):x0,f=nearFree(ff[1]||o.id==="kalyan"||o.id==="rasteniye"?rects.slice(P):rects,x,bw,bh,ideal-bh/2,-W*.1,Math.max(-W*.1,H-bh*.6),g);
         if(f&&(!best||f.d<best.d))best={s:s,x:x,y:f.y,w:w,bw:bw,bh:bh,d:f.d,ext:x0+bw}})});
       var st=o.el.style;
       if(!best){st.display="none";return}
@@ -795,10 +797,11 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
         var b=q.blk;if(q.mob.anchor){var ab=BLK.filter(function(x){return x._r&&String(x._r.title).indexOf(q.mob.anchor)===0})[0];if(ab)b=ab}
         items.push({q:q,y:b.offsetTop+b.offsetHeight/2+(q.mob.dy||0)*W})});
       items.sort(function(a,b){return a.y-b.y});
-      items.forEach(function(o,tn){var q=o.q,sd=tn%2?1:-1,pw=Math.round(pw0*(q.mob.sc||1)),h=(pw*.976)*q.a+pw*.052,rot=(tn%2?-1:1)*(3+tn*2%5),t=Math.max(o.y,last[sd]+h/2+gp);
-        last[sd]=t+h/2;var st=q.ph.style;st.width=pw+"px";st.left=(sd*(W/2+vis-pw/2)+(q.mob.dx||0)*W)+"px";st.top=t+"px";
+      // снимок одного размера на всех экранах (Григорий 20.10: «размеры как в жизни»): .42 листа ≈ 12,6 см, как на широком экране; уже — только если не влезает полоса у края
+      items.forEach(function(o,tn){var q=o.q,sd=tn%2?1:-1,pw=Math.round(Math.min(pw0,W*.42)*(q.mob.sc||1)),out=Math.min(W/2+vis,W/2-ov+pw),h=(pw*.976)*q.a+pw*.052,rot=(tn%2?-1:1)*(3+tn*2%5),t=Math.max(o.y,last[sd]+h/2+gp);
+        last[sd]=t+h/2;var st=q.ph.style;st.width=pw+"px";st.left=(sd*(out-pw/2)+(q.mob.dx||0)*W)+"px";st.top=t+"px";
         st.transform="translate(calc(-50% + var(--dx,0px)),-50%) rotate("+rot+"deg)";objTop.appendChild(q.ph);
-        rects.push({x:sd<0?-W/2-vis:W/2+vis-pw+(q.mob.dx||0)*W,y:t-h/2,w:pw,h:h})})}
+        rects.push({x:sd<0?-out:out-pw+(q.mob.dx||0)*W,y:t-h/2,w:pw,h:h})})}
     var k=W/P.bw;
     H=Math.max(content.offsetHeight,(P.topH-P.topM+P.botVis)*k+W*.2);
     rects.forEach(function(r){H=Math.max(H,r.y+r.h+W*.08)});
