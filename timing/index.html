@@ -496,7 +496,6 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   function tailLoad(){
     var want=tailWant();
     if(!TAIL_VIDEO||!TAIL_FMT[want]||!tailC||!want||TAIL.src===want)return;
-    if(want==="f16"&&Math.abs(window.innerWidth/window.innerHeight-16/9)>.12)return;// широкое видео снято ровно под 16:9; у 16:10 и других лист в конце видео не совпал бы с листом страницы — там падение кодом
     TAIL.asked=true;TAIL.ready=false;TAIL.on=false;TAIL.src=want;TAIL.fr=new Array(TAIL.n);TAIL.pos=-1;
     var land=want==="f16";tailC.width=land?1280:720;tailC.height=land?720:1280;TAIL.dir=land?"final/tail16/f":"final/tail9/f";
     tailEnsure(0,true)
@@ -878,6 +877,8 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     EF=port?.24*vh:clamp((cel?cel.t:(RUG.cy-(port?RUG.w:RUG.h)/2))+.02*vh,.12*vh,.24*vh);// на широком экране коврик чуть уходит под край стола
     V9=TAIL_VIDEO&&TAIL_FMT.f9&&!RM&&vw<vh*1.25;SX=1;
     if(V9){var vk=Math.max(vw/540,vh/960);FY=(683.7-480)*vk;SC_END=316.3*vk/(s3*H);SX=(41.9/316.3)/(W/H);EF=vh/2+(230.4-480)*vk}
+    // широкое видео снято с раскладки 960×540: то же самое для любого широкого окна (окно браузера почти никогда не ровно 16:9)
+    else if(TAIL_VIDEO&&TAIL_FMT.f16&&!RM){var wk=Math.max(vw/960,vh/540);FY=11.54*wk;SC_END=299.15*wk/(s3*H);SX=(60.67/299.15)/(W/H);EF=vh/2+(86.35-270)*wk}
     TF=s3*SC_END/(1-RHO);
     FY=Math.max(FY,EF+10+e-vh/2);// лист на полу не заходит под стол
     CWF=tBotY+(vh/2-EF)/TF;
