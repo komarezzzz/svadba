@@ -59,6 +59,8 @@ body.rm #kitchen,body.rm #haze,body.rm #hello{display:none!important}
 body.rm .view{position:relative}
 
 /* пол (финал): картинка из final/, пока её нет — тёплые доски */
+/* земля: пол, коврик и вещи одним слоем; в конце камера поднимается над столом, пол дальше стола и уменьшается медленнее (параллакс) */
+#ground{position:absolute;inset:0;z-index:0;transform-origin:0 0;pointer-events:none}
 #floor{position:absolute;inset:0;z-index:0;background-color:#b98f5c;background-position:center;
   background-image:repeating-linear-gradient(90deg,rgba(48,28,12,.38) 0 2px,transparent 2px 22vmin),
     repeating-linear-gradient(90deg,rgba(255,236,206,.05) 0 7vmin,rgba(0,0,0,.05) 7vmin 15vmin,transparent 15vmin 22vmin),
@@ -305,12 +307,10 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
 <div id="svh" aria-hidden="true"></div>
 <div class="stage" id="stage">
  <div class="view" id="view">
-  <div id="floor"></div>
+  <div id="ground"><div id="floor"></div><img id="rug" alt="" aria-hidden="true" hidden><div id="pol" aria-hidden="true"></div></div>
   <img id="kitchen" src="kitchen-bg.webp" alt="" aria-hidden="true">
   <div id="haze" aria-hidden="true"></div>
   <div id="hello" role="heading" aria-level="1" aria-label="Всё расписано. Седьмое ноября, Петербург. Вот как пройдёт ваш день."><span class="l1" aria-hidden="true"><i class="w">Всё</i><i class="w">расписано</i></span><span class="l2" aria-hidden="true"><i class="w">Седьмое</i><i class="w">ноября,</i><i class="w">Петербург.</i><i class="w">Вот</i><i class="w">как</i><i class="w">пройдёт</i><i class="w">ваш</i><i class="w">день.</i></span></div>
-  <img id="rug" alt="" aria-hidden="true" hidden>
-  <div id="pol" aria-hidden="true"></div>
   <div class="layer" id="world"><div id="tableW"></div><div id="itable"></div></div>
   <div id="vignette"></div>
   <div id="sheetWrap"><div id="nudge"><div class="layer" id="sheetLayer"><div class="sheet" id="sheet"><div id="tiles"></div><main class="content" id="content"></main></div></div></div></div>
@@ -330,7 +330,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   var D=document,root=D.documentElement,body=D.body,T=window.TIMING;
   var $=function(id){return D.getElementById(id)};
   var stage=$("stage"),view=$("view"),floor=$("floor"),world=$("world"),tableW=$("tableW"),itable=$("itable"),sheetWrap=$("sheetWrap"),nudge=$("nudge"),
-      sheetLayer=$("sheetLayer"),sheet=$("sheet"),tiles=$("tiles"),content=$("content"),pawBox=$("pawBox"),rug=$("rug"),kitchen=$("kitchen"),haze=$("haze"),hello=$("hello"),paw=$("paw"),paw2=$("paw2"),objTop=$("objTop"),svh=$("svh"),
+      sheetLayer=$("sheetLayer"),sheet=$("sheet"),tiles=$("tiles"),content=$("content"),pawBox=$("pawBox"),rug=$("rug"),ground=$("ground"),kitchen=$("kitchen"),haze=$("haze"),hello=$("hello"),paw=$("paw"),paw2=$("paw2"),objTop=$("objTop"),svh=$("svh"),
       cscrim=$("cscrim"),csheet=$("csheet"),csbody=$("csbody"),okbar=$("okbar"),oktext=$("oktext"),okyes=$("okyes"),okfix=$("okfix");
   [].forEach.call(hello.querySelectorAll(".w"),function(w,j){w.style.setProperty("--d",(j<2?j*170:340+(j-2)*75)+"ms")});
   if(!T||!T.items){content.innerHTML='<h1>Тайминг</h1><p class="sub">Не удалось загрузить тайминг. Обновите страницу.</p>';sheetLayer.style.transform="translate(50vw,10vh)";return}
@@ -486,16 +486,16 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     {f:"igrushka-mysh",w:.16,x:.17,y:1.04,r:18},{f:"nosok",w:.13,x:.88,y:1.05,r:-25}];
   /* ===== Flow-хвост, управляется ПРОКРУТКОЙ: кадры видео «стол → пол» листаются вперёд и назад вместе со скроллом (нет автозапуска).
      Фазы по p: до .86 — чтение, потом всё со стола улетает и лист чистый; .86….985 — кадры (p сглажен камерой); дальше — финал страницы и кошка. ===== */
-  var tailC=document.getElementById("tailc"),TAIL={on:false,ready:false,asked:false,src:"",fr:[],n:60,dir:"",pos:-1,op:-1,A:.85,B:.985,hold:false};
+  var tailC=document.getElementById("tailc"),TAIL={on:false,ready:false,asked:false,src:"",fr:[],n:60,dir:"",pos:-1,op:-1,A:.90,B:.985,hold:false};
   // видео-хвост снят в двух форматах: 9:16 (final/tail9, телефон) и 16:9 (final/tail16, монитор); оба: стол → пол сверху
   function tailWant(){return window.innerWidth>=window.innerHeight*1.25?"f16":"f9"}
   // кадры: вертикально 540×960 (final/tail9), горизонтально 960×540 (final/tail16); картинки грузятся везде, ничего не стартует само
-  // Видео-хвост 20.10: Flow (Omni 1.1 Flash, 9:16, 1080p), первый кадр = страница на p=.85, последний = финал страницы; кадры final/tail9 (720×1280)
-  var TAIL_VIDEO=false;
+  // Видео-хвост 20.10 (v6): Flow (Omni 1.1 Flash, 1080p), сцена неподвижна, движется только лист; первый кадр = страница на p=.90 (стол ушёл), последний = финал; кадры final/tail9 (720×1280). Приёмка: tail_motion_qc.py + вырезки вещей по кадрам. 16:9 пока без видео (обе генерации переворачивали лист), там лист падает кодом
+  var TAIL_VIDEO=false,TAIL_FMT={f9:true,f16:false};// v1.0: сцена конца новая (стол стоит), видео под неё ещё не снято
   // кадры держим окном: в памяти только ближайшие к текущему (720×1280 × 60 кадров разом = ~220 МБ, телефону много)
   function tailLoad(){
     var want=tailWant();
-    if(!TAIL_VIDEO||!tailC||!want||TAIL.src===want)return;
+    if(!TAIL_VIDEO||!TAIL_FMT[want]||!tailC||!want||TAIL.src===want)return;
     TAIL.asked=true;TAIL.ready=false;TAIL.on=false;TAIL.src=want;TAIL.fr=new Array(TAIL.n);TAIL.pos=-1;
     var land=want==="f16";tailC.width=land?1280:720;tailC.height=land?720:1280;TAIL.dir=land?"final/tail16/f":"final/tail9/f";
     tailEnsure(0,true)
@@ -621,7 +621,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   okfix.addEventListener("click",function(){openFix("",okfix)});
 
   /* ===== раскладка по размеру экрана ===== */
-  var YE0=0,U_EDGE=0,itOn=false,INTRO=0,TH0=80,YC=0,PERSP=1,YH0=0,vw=0,vh=0,W=0,H=0,s0=1,s3=1,y0=0,y1=0,y2=0,EX=0,FY=0,SC_END=.65,ROT_END=5.5,stageTop=0,stageH=1,topPadRM=0,lastKey="",WIDE=false,ROWPOS=[];
+  var YE0=0,U_EDGE=0,itOn=false,INTRO=0,TH0=80,YC=0,PERSP=1,YH0=0,vw=0,vh=0,W=0,H=0,s0=1,s3=1,y0=0,y1=0,y2=0,EX=0,FY=0,SC_END=.65,ROT_END=5.5,TF=.1,EF=0,CWF=0,RHO=.3,lastG="",stageTop=0,stageH=1,topPadRM=0,lastKey="",WIDE=false,ROWPOS=[];
   // HDR — низ общей шапки; RL — линия чтения ниже центра экрана на полшапки (центр видимой области); TOPF — верх листа на крупном плане
   var HDR=64,RL=32,TOPF=.07;
   var PAW={left:0,w:120,h:156};
@@ -823,7 +823,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     // стол — часть мира: едет и масштабируется вместе с листом
     var halfT,tTopY,tBotY,tile=W*6.6;
     if(RM){halfT=Math.max(vw/2+W*.1,objRight+W*.3);tTopY=-topPadRM-W*.1;tBotY=H+W*.3}
-    else{halfT=Math.max(.65*vw/s0,objRight+W*.3,1.9*W,.62*vw/s3);tTopY=-1.3*vh/s0;tBotY=H+1.3*vh/s0}
+    else{halfT=Math.max(.65*vw/s0,objRight+W*.3,1.9*W,.62*vw/s3);tTopY=-1.3*vh/s0;tBotY=H+.05*vh;halfT=Math.max(halfT,1.6*vw/s3)}// стол кончается сразу под листом (край виден в финале), ширины хватает на подъём камеры
     // короткий стол для наклонного интро: тот же дуб и та же привязка узора, но размером в пределах текстурных лимитов
     var tI=-2.4*vh/s0,bI=1.3*vh/s0,hI=Math.min(9000,Math.max(5*W,vw/(2*s0*.28)));
     hI=Math.min(hI,3900,56e6/(2*(bI-tI)));// площадь наклонного стола ≤ ~56 Мпикс: на больших и широких мониторах браузер не рисовал слой целиком (стол пропадал), за краем остаётся цвет дуба
@@ -868,6 +868,14 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     var e=ext(SC_END),fyT=topRes+e-vh/2,fyM=vh/2-e-6;
     FY=pawOK?Math.min(Math.max(vh-PAW.h*.72-e-vh/2,fyT),Math.max(fyT,fyM)):Math.min(Math.max(0,fyT),Math.max(fyT,fyM));
     if(cel)FY=Math.max(fyT,cel.b-.08*cel.h-e-vh/2);// лист лежит внутри каймы коврика, ближе к его низу; лапа достаёт снизу
+    // лапа должна доставать: нижний край листа не выше, чем поднимаются когти (≈ .92 роста лапы от низа экрана), с запасом на толчки
+    if(pawOK&&!RM)FY=Math.max(FY,vh-.74*PAW.h-e-vh/2);
+    // финал (Григорий 20.10, v1.0): стол стоит, его край остаётся в кадре сверху; камера смотрит строго вниз, поднимается и уходит к полу.
+    // TF — масштаб стола в финале: стол ближе к камере, чем пол, поэтому лист на столе крупнее, чем на полу (RHO — высота стола в долях высоты камеры)
+    TF=s3*SC_END/(1-RHO);
+    EF=port?.24*vh:clamp((cel?cel.t:(RUG.cy-(port?RUG.w:RUG.h)/2))+.02*vh,.12*vh,.24*vh);// на широком экране коврик чуть уходит под край стола
+    FY=Math.max(FY,EF+10+e-vh/2);// лист на полу не заходит под стол
+    CWF=tBotY+(vh/2-EF)/TF;
     // коврик большой, лист лежит в его нижней части (нижний конец листа на 10 % длины коврика выше его края), лапа достаёт до листа снизу
     RUG.w=Math.round(rs*RA);RUG.h=Math.round(rs);RUG.rot=(port?90:0)-ROT_END*.6;RUG.cx=vw/2;
     var rbhE=port?RUG.w:RUG.h,pbE=vh/2+FY+sl*SC_END/2*cs+sw*SC_END/2*sn;
@@ -965,30 +973,33 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
       var tr=tilt*Math.PI/180,ye=YC+U_EDGE*Math.cos(tr)*PERSP/(PERSP-U_EDGE*Math.sin(tr));// дальний край стола на экране
       kitchen.style.transform="translateY("+(ye-parseFloat(kitchen.style.height)+2)+"px)";
       kitchen.style.visibility=tilt>.5?"visible":"hidden"}
-    var s,cy,e,ex=0,f=0;
+    var s,cy,e,f=0;
     if(p<.02){s=s0;cy=y0}
     else if(p<.2){e=ease((p-.02)/.18);s=lerp(s0,1,e);cy=(vh/2-lerp(.22,TOPF,e)*vh)/s}
     else if(p<.78){s=1;cy=lerp(y1,y2,(p-.2)/.58)}
-    else{e=ease((p-.78)/.1);s=lerp(1,s3,e);cy=lerp(y2,H/2,e)}
-    if(p>.8)ex=ease((p-.8)/.1)*EX;
+    // конец чтения: камера смотрит строго вниз, поднимается (масштаб падает) и уходит к краю стола; стол и лист стоят, это один мир
+    else{e=ease((p-.78)/.12);s=Math.exp(Math.log(TF)*e);cy=lerp(y2,CWF,e)}
     if(p>.9)f=ease((p-.9)/.05);
-    if(TAIL.hold){ex=0;f=0}
+    if(TAIL.hold)f=0;
     setWC((p>.03&&p<.21)||(p>.77&&p<.97));// слой поднят только пока меняется масштаб
-    var tx=vw/2,ty=vh/2-s*cy;
-    world.style.transform=pre+"translate3d("+tx+"px,"+(ty-ex)+"px,0) scale("+s+")";
-    sheetLayer.style.transform=pre+"translate3d("+tx+"px,"+ty+"px,0) scale("+s+")";
-    objTop.style.transform=sheetLayer.style.transform;// вещи над листом идут за камерой листа (без подъёма стола)
+    var tx=vw/2,ty=vh/2-s*cy,cam=pre+"translate3d("+tx+"px,"+ty+"px,0) scale("+s+")";
+    world.style.transform=cam;objTop.style.transform=cam;
+    // пол дальше стола: при той же камере он крупнее в начале и уменьшается медленнее; точка под камерой сдвигается вместе с ней
+    if(p>.6){var gF=1/(RHO+(1-RHO)*TF/s),gC=clamp(vh/2+(cy-CWF)*TF*(1-RHO),vh/(2*gF),vh-vh/(2*gF)),
+      gt="translate("+(vw/2*(1-gF)).toFixed(1)+"px,"+(vh/2-gF*gC).toFixed(1)+"px) scale("+gF.toFixed(4)+")";
+      if(gt!==lastG){ground.style.transform=gt;lastG=gt}}
+    else if(lastG){ground.style.transform="";lastG=""}
+    if(f>0){// лист сползает с края стола и падает на коврик: сначала едет по столу, потом удаляется (меньше), качается и ложится с поворотом
+      var g=clamp(f/.3,0,1),h=clamp((f-.3)/.7,0,1),eh=ease(h),sw=Math.sin(h*Math.PI*3)*(1-h),sw2=Math.sin(h*Math.PI*2.2+1)*(1-h),
+        y0s=vh/2+TF*(H/2-CWF),Yc=h>0?lerp(EF,vh/2+FY,eh):lerp(y0s,EF,g*g),Sc=h>0?lerp(TF,s3*SC_END,eh)*(1+.05*Math.sin(h*Math.PI)):TF;
+      sheetLayer.style.transform=pre+"translate3d("+(vw/2+sw*vw*.04).toFixed(1)+"px,"+Yc.toFixed(1)+"px,0) perspective("+(vh*1.5)+"px) rotateX("+(sw2*16).toFixed(2)+"deg) rotateY("+(sw*13).toFixed(2)+"deg) rotate("+(sw*8+eh*ROT_END).toFixed(2)+"deg) scale("+Sc.toFixed(4)+") translate(0,"+(-H/2)+"px)"}
+    else sheetLayer.style.transform=cam;
     revealFrame(s,cy,rawP);
-    var wt="none";
-    if(f>0){// падение на пол: покачивание, лист «удаляется» (меньше), ложится с поворотом
-      var sw=Math.sin(f*Math.PI*3)*(1-f),sw2=Math.sin(f*Math.PI*2.2+1)*(1-f),lift=Math.sin(f*Math.PI);
-      // лист отрывается от стола, раскачивается как бумага (наклоны по двум осям в перспективе), ложится на пол и чуть «оседает»
-      wt="perspective("+(vh*1.5)+"px) translate("+(sw*vw*.04)+"px,"+(FY*f)+"px) rotateX("+(sw2*16)+"deg) rotateY("+(sw*13)+"deg) rotate("+(sw*8+f*ROT_END)+"deg) scale("+(1+(SC_END-1)*f+.05*lift)+")"}
-    if(wt!==lastWrap){sheetWrap.style.transform=wt;lastWrap=wt;
+    var fl=f>0&&f<1?Math.sin(clamp((f-.3)/.7,0,1)*Math.PI):0,wt=fl>0?"x":"none";
+    if(wt!==lastWrap||fl>0){sheetWrap.style.transform="none";lastWrap=wt;
       // тень от листа: в полёте мягкая и далеко, на полу короткая и плотная
-      sheetWrap.style.filter=f>0&&f<1?"drop-shadow(0 "+(6+Math.sin(f*Math.PI)*vh*.05)+"px "+(8+Math.sin(f*Math.PI)*vh*.045)+"px rgba(30,16,6,"+(.3+.12*Math.sin(f*Math.PI))+"))":""}
-    if(rugOK){var rf=p>.8?ease((p-.8)/.1):0;// коврик на полу виден уже когда стол уезжает, до падения листа
-      polBox.style.opacity=rf;rug.style.opacity=rf;rug.style.transform="rotate("+RUG.rot+"deg) scale("+(1.12-.12*rf)+")"}
+      sheetWrap.style.filter=fl>0?"drop-shadow(0 "+(6+fl*vh*.05)+"px "+(8+fl*vh*.045)+"px rgba(30,16,6,"+(.3+.12*fl)+"))":""}
+    if(rugOK){var rf=p>.6?1:0;polBox.style.opacity=rf;rug.style.opacity=rf;rug.style.transform="rotate("+RUG.rot+"deg)"}
     setHL(p>.2&&p<.78?cy+RL:null);
     setOk(TAIL.on?rawP>TAIL.B:(p>.78&&!tailBusy));
     setTop(STAIL?qq>.97:(p>.985&&!tailBusy));
