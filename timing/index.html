@@ -92,9 +92,8 @@ body.rm .view{position:relative}
 .photo img{display:block;width:100%;height:auto}
 /* полароид: белая рамка, широкий низ; за фигурами карандашный рисунок комнаты/улицы/зала/поля (fony/), фигуры поверх */
 .photo{padding:calc(var(--W)*.022) calc(var(--W)*.022) calc(var(--W)*.075)!important;background:#fbfaf5}
-.photo img,figure.sk img{background:#fff center/cover no-repeat}
-figure.sk{background:#fbfaf5;padding:calc(var(--W)*.018) calc(var(--W)*.018) calc(var(--W)*.06);box-shadow:calc(var(--W)*.004) calc(var(--W)*.01) calc(var(--W)*.024) rgba(40,20,5,.35)}
-figure.sk img{mix-blend-mode:normal!important}figure.sk.fade img{-webkit-mask-image:none!important;mask-image:none!important}
+.photo img{background:#fff}
+/* рисунки внутри листа — прозрачные, без фона (Григорий 20.10); карандашный фон и рамка — только у фотокарточек на столе */
 .photo.onp{transition:opacity .9s ease-out}
 body.wide .photo{display:block}
 
@@ -423,9 +422,9 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   // телефон: какие рисунки остаются в листе (w — ширина в % поля листа; big — по центру во всю ширину, fade — мягкий низ),
   // а какие лежат снимками на столе у края листа (table). На широком экране все рисунки — снимки на столе, как раньше
   var MOB={"sketch-hondovod-2.webp":{table:1},"sketch-futbol.webp":{w:50},"sketch-kosha-tanec.webp":{w:52,fade:1},"sketch-kosha-mandarin.webp":{w:90,big:1},
-    "sketch-music-combat-subzero-v2.webp":{table:1,anchor:"Music Combat",sc:1.25,dx:0,dy:.3},"sketch-prostavitsya.webp":{w:98,big:1,plain:1},"sketch-kalyan.webp":{table:1},
+    "sketch-music-combat-subzero-v2.webp":{table:1,anchor:"Music Combat",sc:1.2,dx:.1,dy:.3},"sketch-prostavitsya.webp":{w:98,big:1,plain:1},"sketch-kalyan.webp":{table:1},
     "sketch-kosha-ochistitel-bez-rasteniya.webp":{table:1},
-    "sketch-fikus-gost.webp":{table:1},"sketch-nastolka.webp":{table:1},"sketch-ne-edet.webp":{table:1},"sketch-fikus.webp":{w:64,corner:1},"sketch-spasatel.webp":{table:1}};
+    "sketch-fikus-gost.webp":{table:1},"sketch-nastolka.webp":{table:1},"sketch-ne-edet.webp":{table:1},"sketch-fikus.webp":{w:88,corner:1},"sketch-spasatel.webp":{table:1}};
   var BGF={"sketch-hondovod-2.webp":"ulica","sketch-spasatel.webp":"ulica","sketch-ne-edet.webp":"ulica","sketch-fikus.webp":"ulica","sketch-prostavitsya.webp":"ulica",
     "sketch-futbol.webp":"futbol","sketch-kosha-tanec.webp":"zal","sketch-music-combat-subzero-v2.webp":"zal"};// остальное — гостиная
   var SK=[],GROUPS=[],BLK=[],lastSide="r",prevFig=false,lastBlk=null,SZ=[.46,.34,.5,.4,.36,.48,.42,.32];// размеры картинок в доле ширины поля листа
@@ -442,9 +441,9 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     var mob=MOB[r.file]||{};if(mob.table){f.classList.add("tbl");ph.classList.add("tbl")}if(mob.big)f.classList.add("big");if(mob.corner)f.classList.add("corner");if(mob.fade)f.classList.add("fade");
     var n=SK.length,q={mob:mob,blk:own,fig:f,ph:ph,pref:r.side==="l"?-1:r.side==="r"?1:0,rot:(n%2?-1:1)*(2+n%3),a:.8,dead:false,sz:SZ[n%SZ.length]};SK.push(q);gr.qs.push(q);
     f.style.setProperty("--r",(side==="l"?-1:1)*(1.5+n%3*.5)+"deg");f.style.setProperty("--sw",Math.round(q.sz*100));
-    loadChain(im,["sketchi-pol/"+r.file.replace(/\.\w+$/,"")+".jpg","sketchi-lica-crop/"+r.file,"sketchi-crop/"+r.file],// полароид: рисунок на карандашном фоне (sketchi-pol/)
+    loadChain(im,["sketchi-lica-crop/"+r.file,"sketchi-crop/"+r.file],// полароид: рисунок на карандашном фоне (sketchi-pol/)
       
-      function(){q.a=im.naturalHeight/im.naturalWidth||q.a;pi.src=im.currentSrc||im.src;
+      function(){q.a=im.naturalHeight/im.naturalWidth||q.a;var pol="sketchi-pol/"+r.file.replace(/\.\w+$/,"")+".jpg",src0=im.currentSrc||im.src;pi.onerror=function(){pi.onerror=null;pi.src=src0};pi.src=pol;
         // у каждого свой размер: доля ширины поля из ряда SZ, высокие рисунки уже, чтобы площадь была примерно равной
         f.style.setProperty("--sw",q.mob.w?q.mob.w:Math.round(clamp(q.sz*Math.sqrt(.65/q.a),.27,.5)*100));schedule(true)},// снимок берёт уже найденный адрес
       function(){q.dead=true;f.classList.add("hidden");ph.classList.add("hidden");schedule(true)});
