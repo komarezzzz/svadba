@@ -8,7 +8,7 @@
 <meta name="format-detection" content="telephone=no">
 <title>Тайминг. Виктория и Никита</title>
 <style>
-@font-face{font-family:"Kalissa";src:url("fonts/kalissa.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Kalissa";src:url("fonts/kalissa-sub.woff2") format("woff2");font-display:block}
 @font-face{font-family:"FinH";src:url("fonts/finlandica.woff2") format("woff2");font-weight:100 900;font-display:swap}
 @font-face{font-family:"AleksandraC";src:url("fonts/AleksandraC.otf") format("opentype");font-display:swap}
 :root{--W:360px;--hdr:64px;--pencil:#2f2d2a;--soft:#57524b;--rust:#8a5a2b;--paper:#f6efe0;--ease-out:cubic-bezier(.23,1,.32,1)}
@@ -36,6 +36,9 @@ body.rm #kitchen,body.rm #haze,body.rm #hello{display:none!important}
 #hello .w{display:inline-block;padding:.12em .34em .22em .34em;margin:-.12em -.2em -.22em -.2em}
 #hello .w{animation:helloW .95s cubic-bezier(.2,.8,.2,1) var(--d,0ms) backwards}
 @keyframes helloW{from{opacity:0;transform:translateY(46px) scale(.97)}}
+/* загрузка: пока шрифты, кухня, стол и бумага не готовы, экран закрыт шторкой цвета фона; слова шапки стоят на паузе и вылетают после неё */
+#hello .w{animation-play-state:paused}html.go #hello .w{animation-play-state:running}
+#curtain{position:fixed;inset:0;z-index:99999;background:#2a1c10;pointer-events:none;transition:opacity .6s ease}html.go #curtain{opacity:0}
 @media (prefers-reduced-motion:reduce){#hello .w{animation:none}}
 /* hello-up: на вертикальном экране надпись стоит выше стола, на светлом окне */
 @media (max-aspect-ratio:1/1){#hello{top:22%}}
@@ -208,7 +211,7 @@ body:not(.wide) .row.brk .s{white-space:nowrap}
 }
 /* шапка шагов (steps-header.js): на узком экране цель нажатия «1» и «2» ≥ 40 px, подпись пары не вылезает */
 @media (max-width:520px){
-  body>header.sh nav a:not([aria-current]){min-width:40px;justify-content:center;padding:0 8px}
+  body>header.sh nav a:not([aria-current]){min-width:44px;justify-content:center;padding:0 8px}
   body>header.sh{padding-right:6px}
 }
 
@@ -273,9 +276,29 @@ body:not(.wide) .row.brk .s{white-space:nowrap}
   #pawBox,.ttl{transition:none}
 }
 </style>
+<link rel="icon" href="data:,">
+<link rel="preload" href="fonts/kalissa-sub.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/finlandica.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/AleksandraC.otf" as="font" type="font/otf" crossorigin>
+<link rel="preload" href="kitchen-bg.webp" as="image" fetchpriority="high">
+<link rel="preload" href="stol-oak-tile.webp" as="image" fetchpriority="high">
+<link rel="preload" href="bumaga-top.webp" as="image" fetchpriority="high">
+<link rel="preload" href="bumaga-mid.webp" as="image" fetchpriority="high">
+<link rel="preload" href="bumaga-bot.webp" as="image" fetchpriority="high">
+<script>
+/* шторка: показываем страницу, когда готовы шрифты заставки, кухня, стол и бумага (не дольше 4,5 с); так нет смены шрифта и подгрузки текстур на глазах */
+(function(){var d=document,H=d.documentElement,done=false;
+function go(){if(done)return;done=true;window.__go=true;H.classList.add("go");try{window.dispatchEvent(new Event("scroll"))}catch(e){}setTimeout(function(){var c=d.getElementById("curtain");if(c&&c.parentNode)c.parentNode.removeChild(c)},900)}
+function img(u){return new Promise(function(ok){var i=new Image();i.fetchPriority="high";i.onload=function(){(i.decode?i.decode():Promise.resolve()).then(ok,ok)};i.onerror=ok;i.src=u})}
+var jobs=[];
+if(d.fonts&&d.fonts.load)["1em Kalissa","1em FinH","1em AleksandraC"].forEach(function(f){jobs.push(d.fonts.load(f,"Всё расписано").catch(function(){}))});
+["kitchen-bg.webp","stol-oak-tile.webp","bumaga-top.webp","bumaga-mid.webp","bumaga-bot.webp"].forEach(function(u){jobs.push(img(u))});
+Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!=="loading"?r():d.addEventListener("DOMContentLoaded",r)})}).then(function(){return d.fonts&&d.fonts.ready}).then(go,go);setTimeout(go,4500)})();
+</script>
 <script src="steps-header.js" defer></script>
 </head>
 <body>
+<div id="curtain" aria-hidden="true"></div>
 <div id="svh" aria-hidden="true"></div>
 <div class="stage" id="stage">
  <div class="view" id="view">
@@ -929,7 +952,7 @@ body:not(.wide) .row.brk .s{white-space:nowrap}
       if(sh!==SHH){SHH=sh;shd.style.transform=sh>0?"translate3d(0,"+(-sh*(HDR+26)).toFixed(1)+"px,0)":"";shd.style.opacity=sh>.98?"0":"";shd.style.pointerEvents=sh>.5?"none":"";shd.style.visibility=sh>.98?"hidden":""}}}
     if(INTRO){var hw=hello.querySelectorAll(".w"),hj,hd;// слова шапки: вылетают сами по CSS при загрузке (не зависят от кадров камеры); дальше по скроллу уезжают вверх и гаснут
       hello.style.display=ip<1?"block":"none";
-      if(!HELLO_ON){if(!HELLO_T0){HELLO_T0=performance.now();setTimeout(function(){HELLO_ON=true;requestFrame()},2300)}if(ip>.02)HELLO_ON=true}
+      if(!HELLO_ON){if(window.__go&&!HELLO_T0){HELLO_T0=performance.now();setTimeout(function(){HELLO_ON=true;requestFrame()},2300)}if(ip>.02)HELLO_ON=true}
       if(HELLO_ON)for(hj=0;hj<hw.length;hj++){// гаснут в том же порядке, как появились
         hd=Math.pow(clamp((ip-.31)/.07,0,1),2);   // надпись гаснет к ip≈.67, текст на листе начнётся только после ip=1: между ними около секунды прокрутки
         hw[hj].style.opacity=(1-hd).toFixed(3);
