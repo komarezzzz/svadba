@@ -351,6 +351,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
 
   var mq=window.matchMedia?window.matchMedia("(prefers-reduced-motion: reduce)"):null;
   var RM=!!(mq&&mq.matches);
+  var SAVE=false;try{SAVE=!!(navigator.connection&&navigator.connection.saveData)}catch(e){}
   var clamp=function(v,a,b){return Math.max(a,Math.min(b,v))};
   var ease=function(t){t=clamp(t,0,1);return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2};
   var lerp=function(a,b,t){return a+(b-a)*t};
@@ -990,7 +991,8 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     var rawP0=clamp((sy-stageTop-INTRO)/Math.max(1,stageH-ih-INTRO),0,1);
     var ip=INTRO?clamp((sy-stageTop)/INTRO,0,1):1;
     p=clamp((sy-stageTop-INTRO)/Math.max(1,stageH-ih-INTRO),0,1);
-    if(!TAIL.asked&&rawP0>.5)tailLoad();// кадры хвоста грузим, только когда читатель дошёл до середины листа (память телефона)
+    // Save-Data и reduced motion: кадры хвоста не грузим, финал — статичный (навык scroll-site)
+    if(!TAIL.asked&&!SAVE&&!RM&&rawP0>.5)tailLoad();// кадры хвоста грузим, только когда читатель дошёл до середины листа (память телефона)
     var qq=STAIL?clamp((sy-stageTop-stageH+ih)/STAIL,0,1):0,rawP=p,pe=tailStep(p),tailBusy=TAIL.on&&rawP>TAIL.A-.012&&rawP<TAIL.B+.015;p=pe;
     var tilt=0;
     if(INTRO&&ip<1){var te=clamp((ip-.46)/.54,0,1);te=te*te*(3-2*te);te=te*te*(3-2*te);tilt=TH0*(1-te)}
