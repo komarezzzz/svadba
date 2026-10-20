@@ -622,7 +622,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   okfix.addEventListener("click",function(){openFix("",okfix)});
 
   /* ===== раскладка по размеру экрана ===== */
-  var YE0=0,U_EDGE=0,itOn=false,INTRO=0,TH0=80,YC=0,PERSP=1,YH0=0,vw=0,vh=0,W=0,H=0,s0=1,s3=1,y0=0,y1=0,y2=0,EX=0,FY=0,SC_END=.65,ROT_END=5.5,TF=.1,EF=0,CWF=0,RHO=.3,lastG="",stageTop=0,stageH=1,topPadRM=0,lastKey="",WIDE=false,ROWPOS=[];
+  var YE0=0,U_EDGE=0,itOn=false,INTRO=0,TH0=80,YC=0,PERSP=1,YH0=0,vw=0,vh=0,W=0,H=0,s0=1,s3=1,y0=0,y1=0,y2=0,EX=0,FY=0,SC_END=.65,ROT_END=5.5,TF=.1,EF=0,CWF=0,RHO=.3,lastG="",V9=false,SX=1,stageTop=0,stageH=1,topPadRM=0,lastKey="",WIDE=false,ROWPOS=[];
   // HDR — низ общей шапки; RL — линия чтения ниже центра экрана на полшапки (центр видимой области); TOPF — верх листа на крупном плане
   var HDR=64,RL=32,TOPF=.07;
   var PAW={left:0,w:120,h:156};
@@ -873,8 +873,12 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     if(pawOK&&!RM)FY=Math.max(FY,vh-.74*PAW.h-e-vh/2);
     // финал (Григорий 20.10, v1.0): стол стоит, его край остаётся в кадре сверху; камера смотрит строго вниз, поднимается и уходит к полу.
     // TF — масштаб стола в финале: стол ближе к камере, чем пол, поэтому лист на столе крупнее, чем на полу (RHO — высота стола в долях высоты камеры)
-    TF=s3*SC_END/(1-RHO);
+    // видео 9:16 снято с раскладки 540×960 и на экране растянуто «заполнить» (cover): финальный лист и край стола ставим в те же точки, что в последнем кадре видео,
+    // ширину листа подгоняем под видео (на узком экране лист на странице уже, чем был при 540) — иначе в конце видео лист прыгает на 10–25 px
     EF=port?.24*vh:clamp((cel?cel.t:(RUG.cy-(port?RUG.w:RUG.h)/2))+.02*vh,.12*vh,.24*vh);// на широком экране коврик чуть уходит под край стола
+    V9=TAIL_VIDEO&&TAIL_FMT.f9&&!RM&&vw<vh*1.25;SX=1;
+    if(V9){var vk=Math.max(vw/540,vh/960);FY=(683.7-480)*vk;SC_END=316.3*vk/(s3*H);SX=(41.9/316.3)/(W/H);EF=vh/2+(230.4-480)*vk}
+    TF=s3*SC_END/(1-RHO);
     FY=Math.max(FY,EF+10+e-vh/2);// лист на полу не заходит под стол
     CWF=tBotY+(vh/2-EF)/TF;
     // коврик большой, лист лежит в его нижней части (нижний конец листа на 10 % длины коврика выше его края), лапа достаёт до листа снизу
@@ -993,8 +997,8 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     if(f>0){// лист сползает с края стола и падает на коврик: сначала едет по столу, потом удаляется (меньше), качается и ложится с поворотом
       var g=clamp(f/.3,0,1),h=clamp((f-.3)/.7,0,1),eh=ease(h),sw=Math.sin(h*Math.PI*3)*(1-h),sw2=Math.sin(h*Math.PI*2.2+1)*(1-h),
         y0s=vh/2+TF*(H/2-CWF),Yc=h>0?lerp(EF,vh/2+FY,eh):lerp(y0s,EF,g*g),Sc=h>0?lerp(TF,s3*SC_END,eh)*(1+.05*Math.sin(h*Math.PI)):TF;
-      sheetLayer.style.transform=pre+"translate3d("+(vw/2+sw*vw*.04).toFixed(1)+"px,"+Yc.toFixed(1)+"px,0) perspective("+(vh*1.5)+"px) rotateX("+(sw2*16).toFixed(2)+"deg) rotateY("+(sw*13).toFixed(2)+"deg) rotate("+(sw*8+eh*ROT_END).toFixed(2)+"deg) scale("+Sc.toFixed(4)+") translate(0,"+(-H/2)+"px)"}
-    else sheetLayer.style.transform=cam;
+      sheetLayer.style.transform=pre+"translate3d("+(vw/2+sw*vw*.04).toFixed(1)+"px,"+Yc.toFixed(1)+"px,0) perspective("+(vh*1.5)+"px) rotateX("+(sw2*16).toFixed(2)+"deg) rotateY("+(sw*13).toFixed(2)+"deg) rotate("+(sw*8+eh*ROT_END).toFixed(2)+"deg) scale("+(Sc*SX).toFixed(4)+","+Sc.toFixed(4)+") translate(0,"+(-H/2)+"px)"}
+    else sheetLayer.style.transform=SX!==1&&p>.78?cam+" scale("+lerp(1,SX,ease((p-.78)/.12)).toFixed(4)+",1)":cam;
     revealFrame(s,cy,rawP);
     var fl=f>0&&f<1?Math.sin(clamp((f-.3)/.7,0,1)*Math.PI):0,wt=fl>0?"x":"none";
     if(wt!==lastWrap||fl>0){sheetWrap.style.transform="none";lastWrap=wt;
