@@ -91,12 +91,15 @@ body.rm .view{position:relative}
   box-shadow:calc(var(--W)*.006) calc(var(--W)*.014) calc(var(--W)*.03) rgba(40,20,5,.45)}
 .photo img{display:block;width:100%;height:auto}
 /* полароид: белая рамка, широкий низ; за фигурами карандашный рисунок комнаты/улицы/зала/поля (fony/), фигуры поверх */
-/* полароид (Григорий 20.10): квадратный снимок, поля 5,5 % ширины по бокам и сверху, 24 % снизу — как Polaroid 600 (79×79 мм в рамке 88×107) */
-.photo{--par:1;padding:calc(var(--pw,100px)*.05) calc(var(--pw,100px)*.05) calc(var(--pw,100px)*.22)!important;background:#161616;border-radius:calc(var(--pw,100px)*.012);
+/* снимки (Григорий 21.10): почти квадратные рисунки (≤1,1) — полароид в чёрной рамке, квадратное окно, низ 22 %; вытянутые — обычное фото: тонкая кремовая рамка, рисунок целиком */
+.photo{--par:1;padding:calc(var(--pw,100px)*.024) calc(var(--pw,100px)*.024) calc(var(--pw,100px)*.07)!important;background:#fbfaf5;border-radius:calc(var(--pw,100px)*.008);
+  box-shadow:0 0 0 1px rgba(0,0,0,.06),calc(var(--W)*.004) calc(var(--W)*.009) calc(var(--W)*.016) rgba(40,20,5,.32)}
+.photo.pol{padding:calc(var(--pw,100px)*.05) calc(var(--pw,100px)*.05) calc(var(--pw,100px)*.22)!important;background:#161616;border-radius:calc(var(--pw,100px)*.012);
   box-shadow:0 0 0 1px #000,calc(var(--W)*.004) calc(var(--W)*.009) calc(var(--W)*.016) rgba(40,20,5,.38)}
-.photo[data-cap]::before{content:attr(data-cap);position:absolute;left:0;right:0;bottom:calc(var(--pw,100px)*.045);text-align:center;font-family:"Kalissa",Georgia,serif;font-size:calc(var(--pw,100px)*.1);line-height:1;color:#f2efe6;transform:rotate(-1.5deg);white-space:nowrap}
+.photo.pol[data-cap]::before{content:attr(data-cap);position:absolute;left:0;right:0;bottom:calc(var(--pw,100px)*.045);text-align:center;font-family:"Kalissa",Georgia,serif;font-size:calc(var(--pw,100px)*.1);line-height:1;color:#f2efe6;transform:rotate(-1.5deg);white-space:nowrap}
 .photo.nocap::before{display:none}
 .photo img{aspect-ratio:var(--par);object-fit:contain}
+.photo.pol img{aspect-ratio:1/1;object-fit:cover;object-position:50% 50%}
 .photo img{background:#fff}
 /* рисунки внутри листа — прозрачные, без фона (Григорий 20.10); карандашный фон и рамка — только у фотокарточек на столе */
 .photo.onp{transition:opacity .9s ease-out}
@@ -451,8 +454,8 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     f.style.setProperty("--r",(side==="l"?-1:1)*(1.5+n%3*.5)+"deg");f.style.setProperty("--sw",Math.round(q.sz*100));
     loadChain(im,["sketchi-lica-crop/"+r.file,"sketchi-crop/"+r.file],// полароид: рисунок на карандашном фоне (sketchi-pol/)
       
-      function(){q.a=im.naturalHeight/im.naturalWidth||q.a;var pol="sketchi-pol/"+r.file.replace(/\.\w+$/,"")+".jpg",src0=im.currentSrc||im.src;pi.onerror=function(){pi.onerror=null;pi.src=src0};q.par=Math.min(2.3,Math.max(.75,1/q.a));ph.style.setProperty("--par",q.par);if(CAP[r.file])ph.dataset.cap=CAP[r.file];
-        pi.onload=function(){q.par=Math.min(2.3,Math.max(.75,pi.naturalWidth/pi.naturalHeight));ph.style.setProperty("--par",q.par);schedule(true)};pi.src=pol;
+      function(){q.a=im.naturalHeight/im.naturalWidth||q.a;var pol="sketchi-pol/"+r.file.replace(/\.\w+$/,"")+".jpg",src0=im.currentSrc||im.src;pi.onerror=function(){pi.onerror=null;pi.src=src0};q.par=1/q.a;q.pol=q.par<=1.1;ph.classList.toggle("pol",q.pol);ph.style.setProperty("--par",q.par);if(CAP[r.file])ph.dataset.cap=CAP[r.file];
+        pi.onload=function(){q.par=pi.naturalWidth/pi.naturalHeight;q.pol=q.par<=1.1;ph.classList.toggle("pol",q.pol);ph.style.setProperty("--par",q.par);schedule(true)};pi.src=pol;
         // у каждого свой размер: доля ширины поля из ряда SZ, высокие рисунки уже, чтобы площадь была примерно равной
         f.style.setProperty("--sw",q.mob.w?q.mob.w:Math.round(clamp(q.sz*Math.sqrt(.65/q.a),.27,.5)*100));schedule(true)},// снимок берёт уже найденный адрес
       function(){q.dead=true;f.classList.add("hidden");ph.classList.add("hidden");schedule(true)});
@@ -664,7 +667,9 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
         if(r.x<o.x+o.w+gap&&r.x+r.w+gap>o.x&&r.y<o.y+o.h+gap&&r.y+r.h+gap>o.y&&(!hit||o.y+o.h>hit.y+hit.h))hit=o}
       if(!hit)break;r.y=hit.y+hit.h+gap}
     return r}
-  function photoBox(q,pw){var h=pw*(.27+.9/(q.par||1/q.a)),t=Math.abs(q.rot)*Math.PI/180,c=Math.cos(t),s=Math.sin(t);return{bw:pw*c+h*s,bh:pw*s+h*c}}
+  // высота снимка: полароид — квадратное окно 0,9 + поля 0,05 и 0,22; обычное фото — окно по рисунку + поля 0,024 и 0,07
+  function phH(q,pw){return q.pol?pw*1.17:pw*(.094+.952/(q.par||1/q.a))}
+  function photoBox(q,pw){var h=phH(q,pw),t=Math.abs(q.rot)*Math.PI/180,c=Math.cos(t),s=Math.sin(t);return{bw:pw*c+h*s,bh:pw*s+h*c}}
 
   /* снимки на широком экране. Колонка у каждого края листа (от .55W наружу, под бумагу не заходят).
      Снимок по центру своего блока; если место занято — ближайшее свободное выше или ниже, но так,
@@ -718,7 +723,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     var jr=function(k,m){var v=Math.sin((k+1)*12.9898+m*78.233)*43758.5453;return v-Math.floor(v)};
     best.list.forEach(function(o,k){var st=o.q.ph.style,bw=o.b.bw,out=(jr(k,1)*.42-.1)*best.pw,dy=(jr(k,2)-.5)*best.pw*.3+(o.s<0?-.4:.4)*best.pw,// левые чуть выше, правые ниже: между снимками остаются просветы для вещей
         
-        rot=(jr(k,3)<.5?-1:1)*(2+jr(k,4)*7),ar=Math.abs(rot)*Math.PI/180,hh=best.pw*(.27+.9/(o.q.par||1/o.q.a)),// коробка по настоящему углу
+        rot=(jr(k,3)<.5?-1:1)*(2+jr(k,4)*7),ar=Math.abs(rot)*Math.PI/180,hh=phH(o.q,best.pw),// коробка по настоящему углу
         bh=best.pw*Math.sin(ar)+hh*Math.cos(ar),bw=best.pw*Math.cos(ar)+hh*Math.sin(ar),cy=o.t+dy+o.b.bh/2,x=o.s<0?-(x0+bw)-out:x0+out,t=cy-bh/2;o.q.rot=rot;
       st.width=best.pw+"px";st.setProperty("--pw",best.pw+"px");o.q.ph.classList.toggle("nocap",best.pw<110);
       st.left=(x+bw/2)+"px";st.top=cy+"px";st.transform="translate(calc(-50% + var(--dx,0px)),-50%) rotate("+rot+"deg)";
@@ -809,7 +814,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
         items.push({q:q,y:b.offsetTop+b.offsetHeight/2+(q.mob.dy||0)*W})});
       items.sort(function(a,b){return a.y-b.y});
       // снимок одного размера на всех экранах (Григорий 20.10: «размеры как в жизни»): .42 листа ≈ 12,6 см, как на широком экране; уже — только если не влезает полоса у края
-      items.forEach(function(o,tn){var q=o.q,sd=tn%2?1:-1,pw=Math.round(Math.min(pw0,W*.42)*(q.mob.sc||1)),out=Math.min(W/2+vis,W/2-ov+pw),h=pw*(.27+.9/(q.par||1/q.a)),rot=(tn%2?-1:1)*(3+tn*2%5),t=Math.max(o.y,last[sd]+h/2+gp);
+      items.forEach(function(o,tn){var q=o.q,sd=tn%2?1:-1,pw=Math.round(Math.min(pw0,W*.42)*(q.mob.sc||1)),out=Math.min(W/2+vis,W/2-ov+pw),h=phH(q,pw),rot=(tn%2?-1:1)*(3+tn*2%5),t=Math.max(o.y,last[sd]+h/2+gp);
         last[sd]=t+h/2;var st=q.ph.style;st.width=pw+"px";st.setProperty("--pw",pw+"px");q.ph.classList.toggle("nocap",pw<110);st.left=(sd*(out-pw/2)+(q.mob.dx||0)*W)+"px";st.top=t+"px";
         st.transform="translate(calc(-50% + var(--dx,0px)),-50%) rotate("+rot+"deg)";objTop.appendChild(q.ph);
         rects.push({x:sd<0?-out:out-pw+(q.mob.dx||0)*W,y:t-h/2,w:pw,h:h})})}
