@@ -13,7 +13,7 @@
 @font-face{font-family:"AleksandraC";src:url("fonts/AleksandraC.otf") format("opentype");font-display:swap}
 :root{--W:360px;--hdr:64px;--pencil:#2f2d2a;--soft:#57524b;--rust:#8a5a2b;--paper:#f6efe0;--ease-out:cubic-bezier(.23,1,.32,1)}
 *{box-sizing:border-box;margin:0;padding:0}
-html{background:#2a1c10;-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior:none;scroll-padding-top:calc(var(--hdr) + 12px)}
+html{scrollbar-width:none;background:#2a1c10;-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior:none;scroll-padding-top:calc(var(--hdr) + 12px)}
 /* overflow-x на body уходит во viewport, sticky не ломается */
 body{font-family:"AleksandraC",Georgia,serif;color:var(--pencil);background:#2a1c10;overflow-x:hidden;overflow-x:clip;overscroll-behavior:none}
 #svh{position:fixed;left:0;top:0;width:0;height:100vh;height:100svh;visibility:hidden;pointer-events:none}
@@ -90,6 +90,11 @@ body.rm .view{position:relative}
 .photo{position:absolute;left:0;top:0;display:none;background:#fbf8f1;pointer-events:none;
   box-shadow:calc(var(--W)*.006) calc(var(--W)*.014) calc(var(--W)*.03) rgba(40,20,5,.45)}
 .photo img{display:block;width:100%;height:auto}
+/* полароид: белая рамка, широкий низ; за фигурами карандашный рисунок комнаты/улицы/зала/поля (fony/), фигуры поверх */
+.photo{padding:calc(var(--W)*.022) calc(var(--W)*.022) calc(var(--W)*.075)!important;background:#fbfaf5}
+.photo img,figure.sk img{background:#fff center/cover no-repeat}
+figure.sk{background:#fbfaf5;padding:calc(var(--W)*.018) calc(var(--W)*.018) calc(var(--W)*.06);box-shadow:calc(var(--W)*.004) calc(var(--W)*.01) calc(var(--W)*.024) rgba(40,20,5,.35)}
+figure.sk img{mix-blend-mode:normal!important}figure.sk.fade img{-webkit-mask-image:none!important;mask-image:none!important}
 .photo.onp{transition:opacity .9s ease-out}
 body.wide .photo{display:block}
 
@@ -104,7 +109,7 @@ body.rm #vignette{display:none}
 .sheet .tl{position:absolute;max-width:none;pointer-events:none;user-select:none}
 .sheet .midtile{position:absolute;background-repeat:repeat-y;pointer-events:none}
 .content{position:relative;padding:calc(var(--W)*.2) calc(var(--W)*.12) calc(var(--W)*.3)}
-h1{font-weight:400;font-size:calc(var(--W)*.1);line-height:1;margin-bottom:calc(var(--W)*.025);transform:rotate(-1.2deg);transform-origin:0 50%;white-space:nowrap}
+h1{font-weight:400;font-size:calc(var(--W)*.1);line-height:1;margin-bottom:calc(var(--W)*.025);transform:rotate(-1.2deg);transform-origin:50% 50%;white-space:nowrap;text-align:center}
 .sub{font-size:max(calc(var(--W)*.038),.8rem);color:var(--soft);margin-bottom:calc(var(--W)*.05)}
 .legend{display:flex;flex-wrap:wrap;gap:.3em 1.1em;margin:0 0 calc(var(--W)*.05);font-size:max(calc(var(--W)*.032),.78rem);color:var(--soft)}
 .legend>span{display:inline-flex;align-items:center;gap:.35em}
@@ -151,33 +156,33 @@ body:not(.wide) .photo.tbl{display:block;padding:calc(var(--W)*.012) calc(var(--
 figure.sk.big{float:none;clear:both;margin-left:auto;margin-right:auto;margin-top:calc(var(--W)*.02)}
 figure.sk.fade img{-webkit-mask-image:linear-gradient(#000 58%,transparent 94%);mask-image:linear-gradient(#000 58%,transparent 94%)}
 
-/* пометки от руки поверх текста (телефон, как на листе-полотне): цветное время, волнистое подчёркивание названий разными чернилами, обведённая длительность, красные стрелки */
-body:not(.wide) .row .t{color:#8a5a2b;font-style:italic}
-body:not(.wide) .row.blk .ttl{font-weight:600;text-decoration-line:underline;text-decoration-style:wavy;text-decoration-thickness:1.4px;text-underline-offset:.22em;text-decoration-skip-ink:none}
-body:not(.wide) .row.mk0 .ttl{text-decoration-color:rgba(45,95,168,.8)}
-body:not(.wide) .row.mk1 .ttl{text-decoration-color:rgba(165,55,38,.8)}
-body:not(.wide) .row.mk2 .ttl{text-decoration-color:rgba(61,122,74,.8)}
-body:not(.wide) .row.mk3 .ttl{text-decoration-color:rgba(138,90,43,.9)}
-body:not(.wide) .row .mins{position:relative;display:inline-block;margin:.45em 0 .25em .15em;padding:.02em .6em;color:#9c3b28;font-style:italic;font-weight:600}
-body:not(.wide) .row .mins::after{content:"";position:absolute;inset:-.1em -.05em;border:1.6px solid rgba(165,55,38,.78);border-radius:52% 48% 55% 45%/58% 50% 50% 46%;transform:rotate(-2.4deg);pointer-events:none}
-body:not(.wide) .row.mk1 .mins::after,body:not(.wide) .row.mk3 .mins::after{border-radius:46% 54% 48% 52%/52% 56% 44% 50%;transform:rotate(1.8deg)}
-body:not(.wide) .row .dsc{display:block;color:#3f3b35}
-body:not(.wide) .row .dsc .ar{font-style:normal;font-weight:700;color:#b3402e}
-body:not(.wide) .row.brk .s{color:#5b7a63}
+/* пометки от руки поверх текста (одинаково на телефоне и мониторе, Григорий 20.10): цветное время, волнистое подчёркивание названий разными чернилами, обведённая длительность, красные стрелки */
+.row .t{color:#8a5a2b;font-style:italic}
+.row.blk .ttl{font-weight:600;text-decoration-line:underline;text-decoration-style:wavy;text-decoration-thickness:1.4px;text-underline-offset:.22em;text-decoration-skip-ink:none}
+.row.mk0 .ttl{text-decoration-color:rgba(45,95,168,.8)}
+.row.mk1 .ttl{text-decoration-color:rgba(165,55,38,.8)}
+.row.mk2 .ttl{text-decoration-color:rgba(61,122,74,.8)}
+.row.mk3 .ttl{text-decoration-color:rgba(138,90,43,.9)}
+.row .mins{position:relative;display:inline-block;vertical-align:.14em;margin:.45em 0 .25em .15em;padding:.02em .6em;color:#9c3b28;font-style:italic;font-weight:600}
+.row .mins::after{content:"";position:absolute;inset:-.1em -.05em;border:1.6px solid rgba(165,55,38,.78);border-radius:52% 48% 55% 45%/58% 50% 50% 46%;transform:rotate(-2.4deg);pointer-events:none}
+.row.mk1 .mins::after,.row.mk3 .mins::after{border-radius:46% 54% 48% 52%/52% 56% 44% 50%;transform:rotate(1.8deg)}
+.row .dsc{display:block;color:#3f3b35}
+.row .dsc .ar{font-style:normal;font-weight:700;color:#b3402e}
+.row.brk .s{color:#5b7a63}
 
 /* ЛИСТ-ПОЛОТНО (телефон): время зелёное, подчёркивания: зелёное ушло на коричневый (бывший цвет времени); между блоками пунктир фломастером */
-body:not(.wide) .row .t{color:#2f6f3f;font-style:italic;font-weight:600}
-body:not(.wide) .row.mk2 .ttl{text-decoration-color:rgba(138,90,43,.9)}
-body:not(.wide) .row.mk3 .ttl{text-decoration-color:rgba(176,122,26,.9)}
-body:not(.wide) .row.brk .s,body:not(.wide) .row.brk .t{color:#2f6f3f}
-body:not(.wide) .row.brk .s{display:flex;align-items:center;gap:.5em}
-body:not(.wide) .row.brk .s{font-size:max(calc(var(--W)*.036),.72rem)}
+.row .t{color:#2f6f3f;font-style:italic;font-weight:600}
+.row.mk2 .ttl{text-decoration-color:rgba(138,90,43,.9)}
+.row.mk3 .ttl{text-decoration-color:rgba(176,122,26,.9)}
+.row.brk .s,.row.brk .t{color:#2f6f3f}
+.row.brk .s{display:flex;align-items:center;gap:.5em}
+.row.brk .s{font-size:max(calc(var(--W)*.036),.72rem)}
 .dnc svg{width:2.2em}
 .dnc{display:inline-block;flex:none}.dnc svg{display:block;width:2.6em;height:1.25em;overflow:visible}
-body:not(.wide) .bn{position:relative;margin-top:calc(var(--W)*.09);padding-top:calc(var(--W)*.035)}
-body:not(.wide) .bn::before{content:"";position:absolute;left:-1%;right:-1%;top:0;height:0;border-top:3.5px dashed rgba(38,92,158,.55);border-radius:3px;transform:rotate(-.5deg);opacity:calc(var(--rv,1))}
-body:not(.wide) .row.blk{margin-bottom:calc(var(--W)*.03)}
-body:not(.wide) .row.brk{margin-top:calc(var(--W)*.02);margin-bottom:calc(var(--W)*.02)}
+.bn{position:relative;margin-top:calc(var(--W)*.09);padding-top:calc(var(--W)*.035)}
+.bn::before{content:"";position:absolute;left:-1%;right:-1%;top:0;height:0;border-top:3.5px dashed rgba(38,92,158,.55);border-radius:3px;transform:rotate(-.5deg);opacity:calc(var(--rv,1))}
+.row.blk{margin-bottom:calc(var(--W)*.03)}
+.row.brk{margin-top:calc(var(--W)*.02);margin-bottom:calc(var(--W)*.02)}
 /* три этапа музыкальной игры: фишки с рукописными цифрами, вразброс и под наклоном */
 .stg{display:flex;flex-wrap:wrap;gap:calc(var(--W)*.03) calc(var(--W)*.035);margin-top:calc(var(--W)*.03)}
 .stc{display:inline-flex;align-items:center;gap:.45em;padding:.2em .7em .2em .25em;border:1.6px solid rgba(70,65,58,.5);border-radius:999px 999px 999px 999px/60% 60% 60% 60%;background:rgba(255,250,236,.55);font-weight:600;line-height:1.1;white-space:nowrap}
@@ -186,6 +191,13 @@ body:not(.wide) .row.brk{margin-top:calc(var(--W)*.02);margin-bottom:calc(var(--
 .stc.c1 i{background:#a53726}.stc.c2 i{background:#2d5fa8}
 /* зазор перед блоком: появляется, только если снимкам рядом не хватило места */
 .gap{display:block;height:0}
+/* конец листа (Григорий 20.10): разлиновка, ниже маркером «Дискотэка + кальяны»; фикус — в правом нижнем углу */
+.endnote{clear:both;position:relative;margin-top:calc(var(--W)*.05);padding-bottom:calc(var(--W)*.03)}
+.endnote::before{content:"";display:block;height:calc(var(--W)*.3);margin-bottom:calc(var(--W)*.035);
+  background:repeating-linear-gradient(transparent 0 calc(var(--W)*.072),rgba(45,95,168,.38) calc(var(--W)*.072) calc(var(--W)*.075))}
+.endnote b{display:block;font-family:"AleksandraC",Georgia,serif;font-weight:700;font-size:calc(var(--W)*.085);line-height:1.1;color:#1f3f8a;transform:rotate(-3deg);transform-origin:0 50%;letter-spacing:.01em;
+  text-shadow:.5px .5px 0 rgba(31,63,138,.5),-.4px .3px 0 rgba(31,63,138,.35)}
+figure.sk.corner{float:right;clear:none;margin-top:calc(var(--W)*.02);margin-right:calc(var(--W)*-.06)}
 @media (max-width:600px),(max-height:500px){
   .row .t{font-size:max(calc(var(--W)*.04),.78rem)}
   .row .s{font-size:max(calc(var(--W)*.048),.95rem)}
@@ -195,22 +207,23 @@ body:not(.wide) .row.brk{margin-top:calc(var(--W)*.02);margin-bottom:calc(var(--
 }
 /* картинки лежат в листе (всё, кроме самого широкого экрана, где снимки на столе): строки идут подряд обычным потоком и обтекают картинки построчно
    (не гридом: сетка-блок рядом с поплавком сжимается в щель). Время над названием, иконка — в строке с названием, разделитель — пустой блок, он стоит только рядом с текстом */
-body:not(.wide) .row{display:block;padding:calc(var(--W)*.014) 0 0;border-bottom:0}
-body:not(.wide) .row::after{content:"";display:flow-root;margin-top:calc(var(--W)*.014);border-top:1px dashed rgba(70,65,58,calc(.3*var(--rv,1)))}
-body:not(.wide) .row.brk{padding-top:calc(var(--W)*.006)}
-body:not(.wide) .row.brk::after{margin-top:calc(var(--W)*.006)}
-body:not(.wide) .row .t{display:block;white-space:nowrap;margin-bottom:calc(var(--W)*.004)}
-body:not(.wide) .row .s{overflow-wrap:break-word}
-body:not(.wide) .row.blk .s{padding-left:0}
-body:not(.wide) .row.blk.icw .s{padding-left:0}
-body:not(.wide) .ic{position:static;display:inline-block;vertical-align:-.2em;margin-right:.4em}
-body:not(.wide) .row.brk .t,body:not(.wide) .row.brk .s{display:inline}
-body:not(.wide) .row.brk .t{margin-right:.7em}
-body:not(.wide) .row.brk .s{white-space:nowrap}
+.row{display:block;padding:calc(var(--W)*.014) 0 0;border-bottom:0}
+.row::after{content:"";display:flow-root;margin-top:calc(var(--W)*.014);border-top:1px dashed rgba(70,65,58,calc(.3*var(--rv,1)))}
+.row.brk{padding-top:calc(var(--W)*.006)}
+.row.brk::after{margin-top:calc(var(--W)*.006)}
+.row .t{display:block;white-space:nowrap;margin-bottom:calc(var(--W)*.004)}
+.row .s{overflow-wrap:break-word}
+.row.blk .s{padding-left:0}
+.row.blk.icw .s{padding-left:0}
+.ic{position:static;display:inline-block;vertical-align:-.2em;margin-right:.4em}
+.row.brk .t,.row.brk .s{display:inline}
+.row.brk .t{margin-right:.7em}
+.row.brk .s{white-space:nowrap}
 /* телефон: картинки меньше и заходят на поля листа */
 @media (max-width:520px){
   figure.sk{--ks:.92;--mo:-.075}
 }
+html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0;background:transparent}
 /* шапка шагов (steps-header.js): на узком экране цель нажатия «1» и «2» ≥ 40 px, подпись пары не вылезает */
 @media (max-width:520px){
   body>header.sh nav a:not([aria-current]){min-width:44px;justify-content:center;padding:0 8px}
@@ -226,6 +239,7 @@ body:not(.wide) .row.brk .s{white-space:nowrap}
 #pawBox.on{opacity:1;translate:0 0;pointer-events:auto;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
 #pawBox.sd{transition:none!important}
 #pawBox.show{opacity:1;translate:0 0;transform:translate3d(0,var(--py-rest,80%),0)}
+#pawBox .leg{position:absolute;left:0;top:calc(100% - 3px);width:100%;height:var(--leg,0px);background-repeat:repeat-y;background-size:100% auto;pointer-events:none}
 #pawBox img{display:block;width:100%;height:auto;-webkit-user-drag:none;filter:drop-shadow(0 -2px 6px rgba(20,10,2,.35))}
 #paw2{position:absolute;left:0;top:0;opacity:0}
 #pawBox.hit #paw2{opacity:1}
@@ -355,13 +369,16 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   /* ===== вещи на столе (без водки и рук): 16 штук из 12 картинок. w — ширина в долях листа, r — поворот, m — зеркало.
      Типы чередуются (один и тот же не ближе чем через 3 вещи); стороны слева/справа чередуются сверху вниз ===== */
   var OBJ=(function(){
-    var W0={kalyan:1.15,macbook:1,tarelka:.62,rasteniye:.92,pivo:.4,zenit:.34,chakchak:.42,tabak:.3,kasseta:.4,shchipcy:.55,ugli:.4},// размеры по реальным меркам: лист ~60 см, табак 8 см, кружка 12 см, цветок крупный
-      
-      F={chakchak:"chak-chak",macbook:"macbook-novyj"},J=[0,.03,.05,.02,.04,.01];
-    return[["kalyan",1,12,0],["zenit",1,-14,1],["kasseta",1,-7,0],["chakchak",1,-6,0],["macbook",1,-7,1],["pivo",1,9,0],
-      ["tabak",1,14,0],["tarelka",1,10,0],["rasteniye",1,-8,0,-.1],["shchipcy",1,17,1],["ugli",1,-12,1],
-      ["zenit",.9,8,0]].map(function(a,i){
-      return{id:a[0],f:F[a[0]]||a[0],w:W0[a[0]]*a[1],r:a[2],m:a[3],j:a[4]!=null?a[4]:J[i%6]}})})();
+    // РЕАЛЬНЫЕ РАЗМЕРЫ (Григорий 20.10): ширина видимой части предмета в сантиметрах; лист = 30 см. VIS — доля ширины картинки, которую занимает сам предмет.
+    // Поменять размер — только здесь, в сантиметрах. Проверка на отрисованной странице: 14 ДИЗАЙН СТУДИЯ/flow-studio/site-qa/sizes_check.py
+    var SHEET_CM=30,CM={kalyan:36,zenit:3.5,zenit2:3,kasseta:10,chakchak:13,macbook:30.4,pivo:12,tabak:8,tarelka:25,rasteniye:30,shchipcy:22,ugli:11,raketki:29},
+      VIS={kalyan:.773,zenit:.626,zenit2:.988,kasseta:.903,chakchak:.893,macbook:.979,pivo:.876,tabak:.804,tarelka:.903,rasteniye:.852,shchipcy:.923,ugli:.914,raketki:.996},
+      F={chakchak:"chak-chak",macbook:"macbook-novyj",zenit2:"zenit-2"},J=[0,.03,.05,.02,.04,.01];
+    window.__REAL={SHEET_CM:SHEET_CM,CM:CM,VIS:VIS};
+    // порядок чередует вещи: угли, щипцы и табак (кальянное) не рядом; ракетки — вдоль листа слева внизу (заполняют низ, Григорий 20.10)
+    return[["kalyan",12,0],["zenit",-14,1],["kasseta",-7,0],["chakchak",-6,0],["ugli",-12,1],["macbook",-7,1],["pivo",9,0],
+      ["tabak",14,0],["tarelka",10,0],["shchipcy",17,1],["rasteniye",-8,0,-.1],["zenit2",8,0],["raketki",4,0,0,{s:-1,at:1}]].map(function(a,i){
+      return{id:a[0],f:F[a[0]]||a[0],w:CM[a[0]]/SHEET_CM/VIS[a[0]],r:a[1],m:a[2],j:a[3]!=null?a[3]:J[i%6],fix:a[4]||null}})})();
   OBJ.forEach(function(o){var im=D.createElement("img");im.className="obj";im.alt="";o.el=im;o.a=1;world.appendChild(im);
     if(o.m)im.style.setProperty("--fx","-1");// у зеркальной вещи тень остаётся с той же стороны
     loadChain(im,["predmety-foto/"+o.f+".webp","predmety-sverhu/"+o.f+".webp"],
@@ -406,9 +423,11 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   // телефон: какие рисунки остаются в листе (w — ширина в % поля листа; big — по центру во всю ширину, fade — мягкий низ),
   // а какие лежат снимками на столе у края листа (table). На широком экране все рисунки — снимки на столе, как раньше
   var MOB={"sketch-hondovod-2.webp":{table:1},"sketch-futbol.webp":{w:50},"sketch-kosha-tanec.webp":{w:52,fade:1},"sketch-kosha-mandarin.webp":{w:90,big:1},
-    "sketch-music-combat-subzero-v2.webp":{table:1,anchor:"Music Combat"},"sketch-prostavitsya.webp":{w:98,big:1,plain:1},"sketch-kalyan.webp":{table:1},
+    "sketch-music-combat-subzero-v2.webp":{table:1,anchor:"Music Combat",sc:1.25,dx:0,dy:.16},"sketch-prostavitsya.webp":{w:98,big:1,plain:1},"sketch-kalyan.webp":{table:1},
     "sketch-kosha-ochistitel-bez-rasteniya.webp":{table:1},
-    "sketch-fikus-gost.webp":{table:1},"sketch-nastolka.webp":{table:1},"sketch-ne-edet.webp":{table:1},"sketch-fikus.webp":{w:92,big:1,plain:1},"sketch-spasatel.webp":{table:1}};
+    "sketch-fikus-gost.webp":{table:1},"sketch-nastolka.webp":{table:1},"sketch-ne-edet.webp":{table:1},"sketch-fikus.webp":{w:64,corner:1},"sketch-spasatel.webp":{table:1}};
+  var BGF={"sketch-hondovod-2.webp":"ulica","sketch-spasatel.webp":"ulica","sketch-ne-edet.webp":"ulica","sketch-fikus.webp":"ulica","sketch-prostavitsya.webp":"ulica",
+    "sketch-futbol.webp":"futbol","sketch-kosha-tanec.webp":"zal","sketch-music-combat-subzero-v2.webp":"zal"};// остальное — гостиная
   var SK=[],GROUPS=[],BLK=[],lastSide="r",prevFig=false,lastBlk=null,SZ=[.46,.34,.5,.4,.36,.48,.42,.32];// размеры картинок в доле ширины поля листа
   function addSketch(r){
     var side=r.side==="l"?"l":r.side==="r"?"r":(lastSide==="l"?"r":"l");
@@ -420,10 +439,11 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     var ph=D.createElement("div");ph.className="photo";var pi=D.createElement("img");pi.alt="";pi.decoding="async";ph.appendChild(pi);world.appendChild(ph);
     var own=lastBlk||sub,gr=GROUPS.length&&GROUPS[GROUPS.length-1].blk===own?GROUPS[GROUPS.length-1]:null;
     if(!gr){var gp=D.createElement("i");gp.className="gap";gp.setAttribute("aria-hidden","true");own.parentNode.insertBefore(gp,own);gr={blk:own,gap:gp,qs:[],c:0,h:0};GROUPS.push(gr)}
-    var mob=MOB[r.file]||{};if(mob.table){f.classList.add("tbl");ph.classList.add("tbl")}if(mob.big)f.classList.add("big");if(mob.fade)f.classList.add("fade");
+    var mob=MOB[r.file]||{};if(mob.table){f.classList.add("tbl");ph.classList.add("tbl")}if(mob.big)f.classList.add("big");if(mob.corner)f.classList.add("corner");if(mob.fade)f.classList.add("fade");
     var n=SK.length,q={mob:mob,blk:own,fig:f,ph:ph,pref:r.side==="l"?-1:r.side==="r"?1:0,rot:(n%2?-1:1)*(2+n%3),a:.8,dead:false,sz:SZ[n%SZ.length]};SK.push(q);gr.qs.push(q);
     f.style.setProperty("--r",(side==="l"?-1:1)*(1.5+n%3*.5)+"deg");f.style.setProperty("--sw",Math.round(q.sz*100));
-    loadChain(im,["sketchi-lica-crop/"+r.file,"sketchi-crop/"+r.file],
+    loadChain(im,["sketchi-pol/"+r.file.replace(/\.\w+$/,"")+".jpg","sketchi-lica-crop/"+r.file,"sketchi-crop/"+r.file],// полароид: рисунок на карандашном фоне (sketchi-pol/)
+      
       function(){q.a=im.naturalHeight/im.naturalWidth||q.a;pi.src=im.currentSrc||im.src;
         // у каждого свой размер: доля ширины поля из ряда SZ, высокие рисунки уже, чтобы площадь была примерно равной
         f.style.setProperty("--sw",q.mob.w?q.mob.w:Math.round(clamp(q.sz*Math.sqrt(.65/q.a),.27,.5)*100));schedule(true)},// снимок берёт уже найденный адрес
@@ -433,6 +453,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   T.items.forEach(function(r){
     // скетч или «флирт» с картинкой — рисунок; без файла — на странице ничего (подписей нет)
     if(r.kind==="sk"||r.kind==="flirt"){if(r.file){addSketch(r);prevFig=true}return}
+    if(r.kind==="end"){var en=D.createElement("div");en.className="endnote";var eb=D.createElement("b");eb.textContent=r.text||"";en.appendChild(eb);content.appendChild(en);en._fig=1;lastBlk=en;prevFig=false;return}
     prevFig=false;
     var d=D.createElement("div"),t=D.createElement("div"),s=D.createElement("div");t.className="t";s.className="s";t.textContent=r.time||"";d.appendChild(t);d.appendChild(s);
     if(r.kind==="pause"){newGrp=true;d.className="row brk";s.appendChild(dancers());s.appendChild(D.createTextNode(r.text||""));content.appendChild(d);return}
@@ -456,7 +477,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
 
   /* ===== появление по прокрутке: слова «проступают» на бумаге, скетчи в листе «рисуются» косой волной.
      Положение элемента на экране считаем из камеры (без чтения DOM в кадре); при reduced-motion всё видно сразу ===== */
-  var REV=[],REVS=[],endQ=null,inkOn=false,STAIL=0,SY=null,SMOOTH=.2,HELLO_T0=0,HELLO_ON=false,SHH=-1;
+  var REV=[],REVS=[],endQ=null,inkOn=false,inkT=0,STAIL=0,SY=null,SMOOTH=.2,HELLO_T0=0,HELLO_ON=false,SHH=-1;
   function wrapWords(el){var tw=D.createTreeWalker(el,NodeFilter.SHOW_TEXT,null),nodes=[],nd,ws=[];
     while((nd=tw.nextNode()))if(nd.nodeValue.trim())nodes.push(nd);
     nodes.forEach(function(tn){var frag=D.createDocumentFragment();
@@ -553,9 +574,11 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
       if(!tot){celTried=true;ensureLegacy()}}).catch(function(){celTried=true;ensureLegacy()});
     else{celTried=true;ensureLegacy()}
     // лапа: нет файлов → прячем молча
-    loadChain(paw,["final/lapa-1-real.webp","final/lapa-1-real.webp"],function(){
+    loadChain(paw,["final/lapa-dl-1.webp","final/lapa-dl-1.webp","final/lapa-1-real.webp","final/lapa-1-real.webp"],function(){
       pawOK=true;pawA=paw.naturalHeight/paw.naturalWidth||pawA;pawBox.hidden=false;schedule(true);
-      loadChain(paw2,["final/lapa-2-real.webp","final/lapa-2-real.webp"],function(){paw2OK=true},function(){paw2OK=false;paw2.classList.add("hidden")});
+      try{var lc=D.createElement("canvas"),lw=paw.naturalWidth,lh=Math.round(paw.naturalHeight*.12);lc.width=lw;lc.height=lh;
+        lc.getContext("2d").drawImage(paw,0,paw.naturalHeight-lh-2,lw,lh,0,0,lw,lh);var lg=D.createElement("div");lg.className="leg";lg.style.backgroundImage="url("+lc.toDataURL("image/webp",.8)+")";pawBox.appendChild(lg)}catch(_){}
+      loadChain(paw2,["final/lapa-dl-2.webp","final/lapa-dl-2.webp","final/lapa-2-real.webp","final/lapa-2-real.webp"],function(){paw2OK=true},function(){paw2OK=false;paw2.classList.add("hidden")});
     },function(){pawOK=false;pawBox.hidden=true});
   }
 
@@ -707,19 +730,20 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     c.forEach(function(y){if(y<lo-.5||y>hi+.5||!freeAt(rs,x,y,w,h,g))return;var d=Math.abs(y-ideal);if(d<bd){bd=d;best=y}});
     return best==null?null:{y:best,d:bd}}
   function layoutObjects(rects,wide,xin,xout,cap){
-    var P=rects.length,live=OBJ.filter(function(o){return !o.dead}),n=live.length,start=W*.15,end=Math.max(start+W,H-W*.4),step=n>1?(end-start)/(n-1):0,g=W*.03,right=0;
+    var P=rects.length,live=OBJ.filter(function(o){return !o.dead}),n=live.length,start=W*.15,end=Math.max(start+W,H-W*.4),step=n>1?(end-start)/(n-1):0,g=W*.05,right=0;
     OBJ.forEach(function(o){o.el.style.display=""});
     // чередование: вещь i стоит в промежутке между двумя соседними снимками и с противоположной от них стороны (фото → вещь → фото → вещь)
     var ph=rects.slice(0,P).map(function(r){return{cy:r.y+r.h/2,sd:(r.x+r.w/2)<0?-1:1}}).sort(function(a,b){return a.cy-b.cy}),G=ph.length-1;
     live.forEach(function(o,i){
       var side=i%2?1:-1,out=false,ideal=start+i*step,best=null,tol=Math.max(W*.8,step*2);
       if(G>0){var gi=Math.min(G-1,Math.round(i*(G-1)/Math.max(1,n-1)));ideal=(ph[gi].cy+ph[gi+1].cy)/2;side=-ph[gi].sd}
+      if(o.fix){side=o.fix.s;ideal=H*o.fix.at}
       // порядок попыток: своя сторона (своя полоса, другая полоса), затем противоположная
       [1,.82,.66,.52].forEach(function(fct){if(best)return;   // не влезло — пробуем поменьше, лишь потом прячем
       [[side,out],[side,!out],[-side,out],[-side,!out]].forEach(function(t){
         if(best&&best.d<=tol)return;
         var s=t[0],isOut=t[1];if(!wide&&isOut)return;
-        var w=o.w*W*fct*(wide?1:.9),a=Math.abs(o.r)*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a),x0=(isOut?xout:xin)+o.j*W;
+        var w=o.w*W*fct,a=Math.abs(o.r)*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a),x0=(isOut?xout:xin)+o.j*W;
         var bw=w*cs+w*o.a*sn;
         if(wide&&!isOut&&bw>cap-o.j*W){w*=Math.max(.2,(cap-o.j*W)/bw);bw=w*cs+w*o.a*sn}
         var bh=w*sn+w*o.a*cs,x=s<0?-(x0+bw):x0,f=nearFree(o.id==="kalyan"?rects.slice(P):rects,x,bw,bh,ideal-bh/2,-W*.1,Math.max(-W*.1,H-bh*.6),g);
@@ -770,12 +794,12 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
       SK.forEach(function(q){if(q.dead||!q.mob.table)return;q.ph.classList.remove("onp");
         if(q.mob.end){endQ=q;return}
         var b=q.blk;if(q.mob.anchor){var ab=BLK.filter(function(x){return x._r&&String(x._r.title).indexOf(q.mob.anchor)===0})[0];if(ab)b=ab}
-        items.push({q:q,y:b.offsetTop+b.offsetHeight/2})});
+        items.push({q:q,y:b.offsetTop+b.offsetHeight/2+(q.mob.dy||0)*W})});
       items.sort(function(a,b){return a.y-b.y});
-      items.forEach(function(o,tn){var q=o.q,sd=tn%2?1:-1,h=(pw0*.976)*q.a+pw0*.052,rot=(tn%2?-1:1)*(3+tn*2%5),t=Math.max(o.y,last[sd]+h/2+gp);
-        last[sd]=t+h/2;var st=q.ph.style;st.width=pw0+"px";st.left=(sd*(W/2+vis-pw0/2))+"px";st.top=t+"px";
+      items.forEach(function(o,tn){var q=o.q,sd=tn%2?1:-1,pw=Math.round(pw0*(q.mob.sc||1)),h=(pw*.976)*q.a+pw*.052,rot=(tn%2?-1:1)*(3+tn*2%5),t=Math.max(o.y,last[sd]+h/2+gp);
+        last[sd]=t+h/2;var st=q.ph.style;st.width=pw+"px";st.left=(sd*(W/2+vis-pw/2)+(q.mob.dx||0)*W)+"px";st.top=t+"px";
         st.transform="translate(calc(-50% + var(--dx,0px)),-50%) rotate("+rot+"deg)";objTop.appendChild(q.ph);
-        rects.push({x:sd<0?-W/2-vis:W/2-ov,y:t-h/2,w:pw0,h:h})})}
+        rects.push({x:sd<0?-W/2-vis:W/2+vis-pw+(q.mob.dx||0)*W,y:t-h/2,w:pw,h:h})})}
     var k=W/P.bw;
     H=Math.max(content.offsetHeight,(P.topH-P.topM+P.botVis)*k+W*.2);
     rects.forEach(function(r){H=Math.max(H,r.y+r.h+W*.08)});
@@ -854,7 +878,8 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     rugOK=!celOn&&legacyRug;rug.hidden=!rugOK;if(celOn)polBox.style.opacity=0;
     if(celOn){var isc=Math.max(vw/CC.w,vh/CC.h),iox=(vw-CC.w*isc)/2,ioy=(vh-CC.h*isc)/2;
       cel={l:iox+CC.rug[0]*CC.w*isc,t:ioy+CC.rug[1]*CC.h*isc,r:iox+CC.rug[2]*CC.w*isc,b:ioy+CC.rug[3]*CC.h*isc};
-      cel.w=cel.r-cel.l;cel.h=cel.b-cel.t}
+      cel.w=cel.r-cel.l;cel.h=cel.b-cel.t;
+      if(!RM){PAW.w=Math.round(9*(port?6.17:5.67)*isc);PAW.h=PAW.w*pawA}}// лапа ~9 см: меньше носка (~25 см), как в жизни (Григорий 20.10)
     var LK=1.3;// лист в финале в 2 раза крупнее исходного (Григорий 18.10: ×3 было слишком крупно, на треть меньше): длина = высота коврика / (3,5/2)
     var SCR=Math.min(1.15,cel?cel.h/LK/sl:(port?rs*RA:rs)/LK/sl);
     var mode,topRes;
@@ -892,9 +917,9 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     POL.forEach(function(o){if(!o.ok)return;var pw=o.w*rbw,st=o.el.style;
       st.width=pw+"px";st.left=(rbx+o.x*rbw-pw/2)+"px";st.top=(rby+o.y*rbh-pw*o.a/2)+"px";st.transform="rotate("+o.r+"deg)"});
     // лапа: картинка — пальцы сверху, основание у нижнего края экрана; в покое видны только пальцы
-    var bry=vh/2+FY+sl*SC_END/2*cs+sw*SC_END/2*sn,rest=PAW.h*(RM?.62:.8),up=clamp(bry-PAW.h*.1-(vh-PAW.h),PAW.h*.08,rest-4);
+    var bry=vh/2+FY+sl*SC_END/2*cs+sw*SC_END/2*sn,rest=PAW.h*(RM?.62:.8),up=clamp(bry-PAW.h*.1-(vh-PAW.h),-vh*.6,rest-4);
     var ps=pawBox.style;ps.width=PAW.w+"px";ps.left=PAW.left+"px";
-    ps.setProperty("--py-hide",(PAW.h+24)+"px");ps.setProperty("--py-rest",rest+"px");ps.setProperty("--py-up",up+"px");
+    ps.setProperty("--py-hide",(PAW.h+24)+"px");ps.setProperty("--leg",Math.max(0,-up)+PAW.h*.4+"px");ps.setProperty("--py-rest",rest+"px");ps.setProperty("--py-up",up+"px");
     if(RM){
       view.style.height=Math.ceil(topPadRM+H+W*.3+Math.max(vh*.5,PAW.h+140))+"px";
       var tr="translate("+vw/2+"px,"+topPadRM+"px)";
@@ -926,7 +951,8 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
       sy=vh/2+s*(e.y-cy);
       pr=clamp((vh*1.02-sy)/(vh*.2),0,1);                      // снимки и вещи проявляются у самого низа экрана и быстрее
       gate=clamp((p-Math.min(e.i,14)*.004)/.05,0,1);
-      pr=Math.round(Math.min(pr,gate,1-outg)*50)/50;
+      e.mx=Math.max(e.mx||0,Math.min(pr,gate));if(p<.02)e.mx=Math.min(pr,gate);// выехали — лежат (не уезжают обратно при прокрутке назад)
+      pr=Math.round(Math.min(e.mx,1-outg)*50)/50;
       if(pr===e.last)continue;e.last=pr;
       q=pr*pr*(3-2*pr);
       // предметы на столе не возникают из воздуха: выезжают из-за края экрана со своей стороны, сразу непрозрачные (opacity не трогаем)
@@ -938,7 +964,9 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     if(inkWant!==inkOn){inkOn=inkWant;
       var ch=content.children,ci;
       for(ci=0;ci<ch.length;ci++)ch[ci].style.transitionDelay=inkWant?Math.min(ci,12)*.05+"s":"0s";
-      content.classList.toggle("ink",inkWant);if(endQ)endQ.ph.style.opacity=inkWant?"":"0"}
+      content.classList.toggle("ink",inkWant);if(endQ)endQ.ph.style.opacity=inkWant?"":"0";
+      // iPhone (WebKit) держит старый снимок наклонённого листа с текстом: после угасания прячем текст совсем, чтобы рисовать было нечего
+      clearTimeout(inkT);if(inkWant)content.style.visibility="";else inkT=setTimeout(function(){if(!inkOn)content.style.visibility="hidden"},950)}
   }
   function showAllReveal(){REVS.forEach(function(e){e.last=-1;e.el.style.removeProperty("--dx");e.el.style.removeProperty("--sc");e.el.style.removeProperty("--dr");e.el.style.opacity=""});content.classList.add("ink");inkOn=true;REV.forEach(function(e){e.last=-1;e.mx=1;if(e.fig){e.el.classList.add("in");return}
     e.words.forEach(function(w){w.style.opacity=1});if(e.ic)e.ic.style.opacity=1;e.el.style.setProperty("--rv",1)})}
@@ -1043,7 +1071,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   try{var C0=window.AudioContext||window.webkitAudioContext;if(C0){AC=new C0();meowLoad()}}catch(e){AC=null}
   function meow(g){
     var now=performance.now();
-    if(!AC||D.hidden||RM||isOpen||now-meowAt<600)return;
+    if(!AC||D.hidden||RM||isOpen||now-meowAt<1300)return;
     // тап по лапе — жест: если звук ещё закрыт, открыть и сыграть сразу после resume
     if(AC.state!=="running"){if(g){var pr=AC.resume();if(pr&&pr.then)pr.then(function(){if(AC.state==="running")meow(false)},function(){})}return}
     meowLoad();
@@ -1068,7 +1096,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   function pawScroll(q){
     if(q<0||isOpen){if(pawVis){pawVis=false;pawBox.classList.remove("on","hit","sd");pawBox.style.transform="";pawBox.style.opacity="";nudge.style.transform=""}pawDone=0;return}
     var x=q*PAWC,c=Math.min(PAWC-1,Math.floor(x)),u=q>=1?1:x-c,last=c===PAWC-1,
-        pe=u<.34?pawEase(u/.34):(u<.5?1:(last?1-.55*pawEase((u-.5)/.4):1-pawEase((u-.5)/.38))),slap=u>=.34&&u<.52,k=c+(u>=.34?1:0);
+        pe=u<.3?pawEase(u/.3):(u<.45?1:1-pawEase((u-.45)/.3)),slap=u>=.3&&u<.46,k=c+(u>=.3?1:0);// после шлепка лапа уходит целиком (к u=.75) и ждёт следующей прокрутки
     if(!pawVis){pawVis=true;pawBox.classList.add("sd")}
     var hide=PAW.h+30,up=parseFloat(pawBox.style.getPropertyValue("--py-up"))||0;
     pawBox.style.opacity=pe>.01?"1":"0";pawBox.style.translate="0 0";
@@ -1099,6 +1127,11 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   window.addEventListener("load",function(){schedule(true);setTimeout(loadFinal,300)});
   window.addEventListener("pageshow",function(e){if(e.persisted)schedule(true)});
   D.addEventListener("visibilitychange",function(){if(!D.hidden&&pawShow&&!RM)pawLoop(700)});
+  // iPhone: после сворачивания вкладки WebKit пару секунд показывает старый кадр наклонного листа (перекос). При возврате прячем сцену на один-два кадра,
+  // пересчитываем раскладку и камеру с текущей прокрутки и только потом показываем
+  function wakeScene(){if(RM)return;view.style.visibility="hidden";SY=null;schedule(true);requestAnimationFrame(function(){requestAnimationFrame(function(){requestFrame();requestAnimationFrame(function(){view.style.visibility=""})})})}
+  D.addEventListener("visibilitychange",function(){if(!D.hidden)wakeScene()});
+  window.addEventListener("pageshow",function(e){if(e.persisted)wakeScene()});
   if(D.fonts&&D.fonts.ready)D.fonts.ready.then(function(){schedule(true)});
   if(mq){var onMq=function(){RM=mq.matches;if(RM)showAllReveal();clearTimeout(pawT);pawT=0;pawShow=false;pawBox.classList.remove("on","hit","show");schedule(true)};
     if(mq.addEventListener)mq.addEventListener("change",onMq);else if(mq.addListener)mq.addListener(onMq)}
