@@ -491,11 +491,12 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   function tailWant(){return window.innerWidth>=window.innerHeight*1.25?"f16":"f9"}
   // кадры: вертикально 540×960 (final/tail9), горизонтально 960×540 (final/tail16); картинки грузятся везде, ничего не стартует само
   // Видео-хвост 20.10 (v6): Flow (Omni 1.1 Flash, 1080p), сцена неподвижна, движется только лист; первый кадр = страница на p=.90 (стол ушёл), последний = финал; кадры final/tail9 (720×1280). Приёмка: tail_motion_qc.py + вырезки вещей по кадрам. 16:9 пока без видео (обе генерации переворачивали лист), там лист падает кодом
-  var TAIL_VIDEO=false,TAIL_FMT={f9:true,f16:false};// v1.0: сцена конца новая (стол стоит), видео под неё ещё не снято
+  var TAIL_VIDEO=true,TAIL_FMT={f9:true,f16:true};// v1.0 (20.10): видео под новую сцену (стол стоит): 9:16 — flow-tail/v7/flow-v7a, 16:9 — flow-v7c
   // кадры держим окном: в памяти только ближайшие к текущему (720×1280 × 60 кадров разом = ~220 МБ, телефону много)
   function tailLoad(){
     var want=tailWant();
     if(!TAIL_VIDEO||!TAIL_FMT[want]||!tailC||!want||TAIL.src===want)return;
+    if(want==="f16"&&Math.abs(window.innerWidth/window.innerHeight-16/9)>.12)return;// широкое видео снято ровно под 16:9; у 16:10 и других лист в конце видео не совпал бы с листом страницы — там падение кодом
     TAIL.asked=true;TAIL.ready=false;TAIL.on=false;TAIL.src=want;TAIL.fr=new Array(TAIL.n);TAIL.pos=-1;
     var land=want==="f16";tailC.width=land?1280:720;tailC.height=land?720:1280;TAIL.dir=land?"final/tail16/f":"final/tail9/f";
     tailEnsure(0,true)
