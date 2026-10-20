@@ -371,13 +371,15 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   var OBJ=(function(){
     // РЕАЛЬНЫЕ РАЗМЕРЫ (Григорий 20.10): ширина видимой части предмета в сантиметрах; лист = 30 см. VIS — доля ширины картинки, которую занимает сам предмет.
     // Поменять размер — только здесь, в сантиметрах. Проверка на отрисованной странице: 14 ДИЗАЙН СТУДИЯ/flow-studio/site-qa/sizes_check.py
-    var SHEET_CM=30,CM={kalyan:36,zenit:3.5,zenit2:3,kasseta:10,chakchak:13,macbook:30.4,pivo:12,tabak:8,tarelka:25,rasteniye:30,shchipcy:22,ugli:11,raketki:29},
-      VIS={kalyan:.773,zenit:.626,zenit2:.988,kasseta:.903,chakchak:.893,macbook:.979,pivo:.876,tabak:.804,tarelka:.903,rasteniye:.852,shchipcy:.923,ugli:.914,raketki:.996},
+    var SHEET_CM=30,CM={kalyan:36,zenit:3.5,zenit2:3,kasseta:10,chakchak:13,macbook:30.4,pivo:12,tabak:8,tarelka:25,rasteniye:30,shchipcy:22,ugli:11,raketki:29,klyuch:8,otkrytka:15},
+      VIS={kalyan:.773,zenit:.626,zenit2:.988,kasseta:.903,chakchak:.893,macbook:.979,pivo:.876,tabak:.804,tarelka:.903,rasteniye:.852,shchipcy:.923,ugli:.914,raketki:.996,klyuch:1,otkrytka:1},
       F={chakchak:"chak-chak",macbook:"macbook-novyj",zenit2:"zenit-2"},J=[0,.03,.05,.02,.04,.01];
     window.__REAL={SHEET_CM:SHEET_CM,CM:CM,VIS:VIS};
     // порядок чередует вещи: угли, щипцы и табак (кальянное) не рядом; ракетки — вдоль листа слева внизу (заполняют низ, Григорий 20.10)
     return[["kalyan",12,0],["zenit",-14,1],["kasseta",-7,0],["chakchak",-6,0],["ugli",-12,1],["macbook",-7,1],["pivo",9,0],
-      ["tabak",14,0],["tarelka",10,0],["shchipcy",17,1],["rasteniye",-8,0,-.1],["zenit2",8,0],["raketki",4,0,0,{s:-1,at:1}]].map(function(a,i){
+      ["tabak",14,0],["tarelka",10,0],["shchipcy",17,1],["rasteniye",-8,0,-.1],["zenit2",8,0],["raketki",4,0,0,{s:-1,at:1}],
+      // ключи от Honda (покупка машины) и открытка «Ленинград» (Никита оттуда) — слева, выбор Григория 20.10
+      ["klyuch",-14,0,0,{s:-1,at:.3}],["otkrytka",7,0,0,{s:-1,at:.6}]].map(function(a,i){
       return{id:a[0],f:F[a[0]]||a[0],w:CM[a[0]]/SHEET_CM/VIS[a[0]],r:a[1],m:a[2],j:a[3]!=null?a[3]:J[i%6],fix:a[4]||null}})})();
   OBJ.forEach(function(o){var im=D.createElement("img");im.className="obj";im.alt="";o.el=im;o.a=1;world.appendChild(im);
     if(o.m)im.style.setProperty("--fx","-1");// у зеркальной вещи тень остаётся с той же стороны
@@ -747,7 +749,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
         var w=o.w*W*fct,a=Math.abs(o.r)*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a),x0=(isOut?xout:xin)+o.j*W;
         var bw=w*cs+w*o.a*sn;
         // реальный размер не ужимаем под полосу (Григорий 20.10): длинная вещь может уйти за край экрана, как макбук
-        var bh=w*sn+w*o.a*cs,x=s<0?-(x0+bw):x0,f=nearFree(ff[1]||o.id==="kalyan"||o.id==="rasteniye"?rects.slice(P):rects,x,bw,bh,ideal-bh/2,-W*.1,Math.max(-W*.1,H-bh*.6),g);
+        var bh=w*sn+w*o.a*cs,x=s<0?-(x0+bw):x0,f=nearFree(ff[1]||o.id==="kalyan"||o.id==="rasteniye"||o.id==="klyuch"||o.id==="otkrytka"?rects.slice(P):rects,x,bw,bh,ideal-bh/2,-W*.1,Math.max(-W*.1,H-bh*.6),g);
         if(f&&(!best||f.d<best.d))best={s:s,x:x,y:f.y,w:w,bw:bw,bh:bh,d:f.d,ext:x0+bw}})});
       var st=o.el.style;
       if(!best){st.display="none";return}
