@@ -465,7 +465,7 @@ body:not(.wide) .row.brk .s{white-space:nowrap}
   function tailWant(){return window.innerWidth>=window.innerHeight*1.25?"f16":"f9"}
   // кадры: вертикально 540×960 (final/tail9), горизонтально 960×540 (final/tail16); картинки грузятся везде, ничего не стартует само
   // Видео-хвост 20.10: Flow (Omni 1.1 Flash, 9:16, 1080p), первый кадр = страница на p=.85, последний = финал страницы; кадры final/tail9 (720×1280)
-  var TAIL_VIDEO=true;
+  var TAIL_VIDEO=false;
   // кадры держим окном: в памяти только ближайшие к текущему (720×1280 × 60 кадров разом = ~220 МБ, телефону много)
   function tailLoad(){
     var want=tailWant();
