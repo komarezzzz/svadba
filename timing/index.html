@@ -432,7 +432,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
   // телефон: какие рисунки остаются в листе (w — ширина в % поля листа; big — по центру во всю ширину, fade — мягкий низ),
   // а какие лежат снимками на столе у края листа (table). На широком экране все рисунки — снимки на столе, как раньше
   var MOB={"sketch-hondovod-2.webp":{table:1},"sketch-futbol.webp":{w:50},"sketch-kosha-tanec.webp":{w:52,fade:1},"sketch-kosha-mandarin.webp":{w:90,big:1},
-    "sketch-music-combat-subzero-v2.webp":{table:1,anchor:"Music Combat",sc:1.2,dx:.1,dy:.3},"sketch-prostavitsya.webp":{w:98,big:1,plain:1},"sketch-kalyan.webp":{table:1},
+    "sketch-music-combat-subzero-v2.webp":{table:1,anchor:"Music Combat",sc:1.2,dx:.1,dy:.3,wout:-.1},"sketch-prostavitsya.webp":{w:98,big:1,plain:1},"sketch-kalyan.webp":{table:1},
     "sketch-kosha-ochistitel-bez-rasteniya.webp":{table:1},
     "sketch-fikus-gost.webp":{table:1},"sketch-nastolka.webp":{table:1},"sketch-ne-edet.webp":{table:1},"sketch-fikus.webp":{w:88,corner:1},"sketch-spasatel.webp":{table:1}};
   var CAP={};// подписи на нижнем поле снимка: ключ — имя файла рисунка, значение — короткая строка (пусто — без подписи)
@@ -721,7 +721,7 @@ Promise.all(jobs).then(function(){return new Promise(function(r){d.readyState!==
     var x0=W*.57,rects=[],right=0,pad=best.pw*.024;
     // хаос: у каждого снимка свой угол (±2…9°), сдвиг наружу и по высоте; число от номера, поэтому раскладка не прыгает
     var jr=function(k,m){var v=Math.sin((k+1)*12.9898+m*78.233)*43758.5453;return v-Math.floor(v)};
-    best.list.forEach(function(o,k){var st=o.q.ph.style,bw=o.b.bw,out=(jr(k,1)*.42-.1)*best.pw,dy=(jr(k,2)-.5)*best.pw*.3+(o.s<0?-.4:.4)*best.pw,// левые чуть выше, правые ниже: между снимками остаются просветы для вещей
+    best.list.forEach(function(o,k){var st=o.q.ph.style,bw=o.b.bw,out=(o.q.mob.wout!=null?o.q.mob.wout:jr(k,1)*.42-.1)*best.pw,dy=(jr(k,2)-.5)*best.pw*.3+(o.s<0?-.4:.4)*best.pw,// левые чуть выше, правые ниже: между снимками остаются просветы для вещей
         
         rot=(jr(k,3)<.5?-1:1)*(2+jr(k,4)*7),ar=Math.abs(rot)*Math.PI/180,hh=phH(o.q,best.pw),// коробка по настоящему углу
         bh=best.pw*Math.sin(ar)+hh*Math.cos(ar),bw=best.pw*Math.cos(ar)+hh*Math.sin(ar),cy=o.t+dy+o.b.bh/2,x=o.s<0?-(x0+bw)-out:x0+out,t=cy-bh/2;o.q.rot=rot;
