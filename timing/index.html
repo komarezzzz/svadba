@@ -288,7 +288,10 @@ body:not(.wide) .row.brk .s{white-space:nowrap}
 <script>
 /* шторка: показываем страницу, когда готовы шрифты заставки, кухня, стол и бумага (не дольше 4,5 с); так нет смены шрифта и подгрузки текстур на глазах */
 (function(){var d=document,H=d.documentElement,done=false;
-function go(){if(done)return;done=true;window.__go=true;H.classList.add("go");try{window.dispatchEvent(new Event("scroll"))}catch(e){}setTimeout(function(){var c=d.getElementById("curtain");if(c&&c.parentNode)c.parentNode.removeChild(c)},900)}
+/* остальные картинки не мешают нужным: их src откладываем до открытия шторки (иначе стол и бумага ждут в общей очереди) */
+var Q=[],CRIT=/kitchen-bg|stol-oak-tile|bumaga-(top|mid|bot)/;
+try{var DS=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,"src");if(DS&&DS.set){Object.defineProperty(HTMLImageElement.prototype,"src",{configurable:true,enumerable:DS.enumerable,get:DS.get,set:function(v){if(window.__go||CRIT.test(String(v)))DS.set.call(this,v);else Q.push([this,v])}});window.__flushImg=function(){while(Q.length){var e=Q.shift();DS.set.call(e[0],e[1])}}}}catch(e){}
+function go(){if(done)return;done=true;window.__go=true;if(window.__flushImg)window.__flushImg();H.classList.add("go");try{window.dispatchEvent(new Event("scroll"))}catch(e){}setTimeout(function(){var c=d.getElementById("curtain");if(c&&c.parentNode)c.parentNode.removeChild(c)},900)}
 function img(u){return new Promise(function(ok){var i=new Image();i.fetchPriority="high";i.onload=function(){(i.decode?i.decode():Promise.resolve()).then(ok,ok)};i.onerror=ok;i.src=u})}
 var jobs=[];
 if(d.fonts&&d.fonts.load)["1em Kalissa","1em FinH","1em AleksandraC"].forEach(function(f){jobs.push(d.fonts.load(f,"Всё расписано").catch(function(){}))});
