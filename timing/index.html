@@ -41,6 +41,10 @@ body.rm #kitchen,body.rm #haze,body.rm #hello{display:none!important}
 @media (max-aspect-ratio:1/1){#hello{top:22%}}
 /* hello-up-land: на горизонтальном экране надпись по центру светлой зоны, между шапкой и краем стола (край стола = .451 высоты) */
 @media (min-aspect-ratio:1001/1000){#hello{top:calc(22.5vh + 39px);transform:translateY(-50%)}#hello .l1{font-size:min(14.2vw,17vh)}#hello .l2{margin-top:.8em;padding-left:0;font-size:clamp(13px,3.4vh,44px)}}
+/* l2 вправо: хвост «В» не касается «Седьмое» (проверено 844×390 … 2560×1440); у почти квадратных экранов сдвига нет, там строка не влезет */
+@media (min-aspect-ratio:13/10){#hello .l2{position:relative;left:5.75em}}
+@media (min-aspect-ratio:3/2){#hello .l2{left:6.5em}}
+@media (min-aspect-ratio:1001/1000) and (max-aspect-ratio:13/10){#hello .l2{margin-top:1.9em}}
 /* кнопка «наверх» в самом конце: сначала тихая, через пару секунд начинает мигать стрелкой */
 .totop{position:fixed;z-index:17;right:calc(14px + env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;border:0;padding:0;display:grid;place-items:center;cursor:pointer;
   background:rgba(51,50,47,.92);color:#f6efe0;box-shadow:0 6px 18px rgba(30,15,5,.45),inset 0 0 0 1px rgba(255,255,255,.16);opacity:0;visibility:hidden;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease,visibility 0s .5s;-webkit-tap-highlight-color:transparent}
