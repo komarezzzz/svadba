@@ -1,0 +1,75 @@
+/* «Жидкое стекло», голубая гамма (корпоратив 29.10). Материал Liquid Glass для веба, только слой навигации:
+   шапка с главами, нижняя панель «Итог», шторка отправки и ползунок вкладок. Тексты карточек и мелкий текст стекла не касаются: они лежат на матовой непрозрачной подложке.
+   1) тело стекла: размытие + насыщенность + подсветка + оттенок активной главы; 2) тонкая светящаяся кромка с двумя бликами;
+   3) внутренние тени («толщина»); 4) преломление по выпуклой кромке (Chromium, SVG-фильтр; Safari/Firefox получают размытие);
+   5) стёкла не вкладываются друг в друга: тело панелей вынесено в ::before; 6) свет следует за пальцем/курсором.
+   Доступность: prefers-reduced-transparency / -contrast / -motion. */
+
+@property --bgh { syntax: "<number>"; inherits: true; initial-value: 205; }
+@property --lh { syntax: "<number>"; inherits: true; initial-value: 205; }
+html { --bgh: 205; }
+
+/* ——— обои: лазурь, циан и белый; оттенок следует за активной главой (190–225) ——— */
+.light { position: fixed; inset: 0; z-index: -1; overflow: hidden; contain: strict; --lh: 205; transition: --lh 1.6s cubic-bezier(.3, .7, .2, 1);
+  background: color-mix(in oklab, var(--paper) 70%, hsl(var(--lh) 80% 90%)); }
+.light::before { content: ""; position: absolute; inset: -20%; will-change: transform; animation: drift 40s ease-in-out infinite alternate;
+  background:
+    radial-gradient(36% 30% at 12% 10%, hsl(calc(var(--lh) - 12) 92% 78%) 0, transparent 72%), radial-gradient(40% 32% at 92% 18%, hsl(calc(var(--lh) + 12) 90% 80%) 0, transparent 72%),
+    radial-gradient(42% 36% at 20% 82%, hsl(calc(var(--lh) - 6) 88% 86%) 0, transparent 72%), radial-gradient(38% 34% at 90% 88%, hsl(calc(var(--lh) - 18) 80% 90%) 0, transparent 72%),
+    radial-gradient(30% 24% at 52% 46%, rgba(255,255,255,.85) 0, transparent 72%); }
+@keyframes drift { to { transform: translate3d(3%, -2%, 0) scale(1.08) rotate(3deg); } }
+
+/* ——— материал «жидкое стекло» ——— */
+.lg { position: relative; isolation: isolate; border-radius: 30px; background: none; }
+/* .lg ставит relative и перебивал fixed у шапки и нижней панели (сдвиг на 16 px вправо и пустота под шапкой): возвращаем fixed */
+.top.lg, .dock.lg { position: fixed; }
+.lg::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  background:
+    radial-gradient(130% 100% at var(--mx, 24%) var(--my, -14%), rgba(255,255,255, calc(.5 + var(--hot, 0) * .2)), rgba(255,255,255,0) 54%),
+    linear-gradient(162deg, hsl(var(--bgh) 80% 99% / .82), hsl(var(--bgh) 70% 96% / .66) 56%, hsl(var(--bgh) 66% 92% / .72));
+  -webkit-backdrop-filter: var(--lens, blur(var(--blur, 15px))) saturate(190%) brightness(1.07) contrast(1.03); backdrop-filter: var(--lens, blur(var(--blur, 15px))) saturate(190%) brightness(1.07) contrast(1.03);
+  box-shadow: inset 1.5px 1.5px 1px -.5px rgba(255,255,255,.96), inset -1.5px -1.5px 1px -.5px rgba(255,255,255,.58), inset 0 0 26px rgba(255,255,255,.24),
+    inset 0 -16px 24px -14px rgba(255,255,255,.5), inset 0 16px 26px -20px rgba(10,60,130,.2), 0 24px 46px -16px rgba(8,38,84,.4), 0 3px 8px rgba(8,38,84,.14);
+  transition: filter .25s; }
+.lg.hot::before { filter: brightness(1.04); }
+/* кромка: два блика — основной сверху-слева и встречный слабый снизу-справа */
+.lg::after { content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: conic-gradient(from 215deg, rgba(255,255,255,1), rgba(255,255,255,.04) 17%, rgba(255,255,255,.62) 50%, rgba(255,255,255,.04) 74%, rgba(255,255,255,1));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+
+/* ползунок вкладок: линза поверх ровной полосы */
+.tabs { background: linear-gradient(180deg, rgba(15,60,120,.14), rgba(15,60,120,.07)); box-shadow: inset 0 1px 3px rgba(15,60,120,.22), inset 0 -1px 0 rgba(255,255,255,.55); }
+.tabs .thumb { background: radial-gradient(120% 140% at 28% -10%, rgba(255,255,255,.98), rgba(255,255,255,.62) 70%);
+  -webkit-backdrop-filter: var(--lens, blur(3px)) saturate(220%) brightness(1.12); backdrop-filter: var(--lens, blur(3px)) saturate(220%) brightness(1.12);
+  box-shadow: inset 1.5px 1.5px 1px -.5px #fff, inset -1.5px -1.5px 1px -.5px rgba(255,255,255,.8), inset 0 -8px 12px -6px rgba(255,255,255,.6), 0 6px 14px -4px rgba(8,38,84,.45), 0 1px 2px rgba(8,38,84,.28); }
+.tab[aria-current="true"] { color: var(--ink); font-weight: 800; }
+
+/* ——— шторка отправки: стекло в ::before, внутри матовые блоки ——— */
+.cr-sheet { background: none; isolation: isolate; border-radius: 36px 36px 0 0; }
+.cr-sheet::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(180deg, hsl(var(--bgh) 80% 98% / .95), hsl(var(--bgh) 60% 95% / .93)); -webkit-backdrop-filter: blur(44px) saturate(200%) brightness(1.04); backdrop-filter: blur(44px) saturate(200%) brightness(1.04);
+  box-shadow: inset 0 1.5px 1px rgba(255,255,255,.96), inset 0 0 30px rgba(255,255,255,.3), 0 -24px 60px -20px rgba(6,28,66,.55); }
+.cr-sheet::after { content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 1.5px; z-index: 2; border-radius: 2px; pointer-events: none; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,1) 22%, rgba(255,255,255,1) 78%, rgba(255,255,255,0)); }
+.cr-scrim { background: rgba(6,28,66,.42); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.cr-grab { background: rgba(15,60,120,.3); }
+
+/* ——— фокус ——— */
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 0 0 0 6px rgba(255,255,255,.92); }
+.seg button:focus-visible, .tab:focus-visible { box-shadow: 0 0 0 3px rgba(255,255,255,.95) inset; outline-offset: -3px; }
+
+/* ——— запасные варианты ——— */
+@media (prefers-reduced-transparency: reduce) {
+  .lg::before, .cr-sheet::before { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: #f4f9ff !important; }
+  .tabs .thumb { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: #fff !important; }
+  .cr-scrim { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(6,28,66,.6); }
+}
+@media (prefers-contrast: more) {
+  .lg::before, .cr-sheet::before { background: #fff !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .lg::after { background: var(--ink) !important; }
+  .tabs { box-shadow: inset 0 0 0 2px var(--ink); }
+  .tabs .thumb { background: #fff !important; box-shadow: inset 0 0 0 2px var(--ink) !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .light::before { animation: none; }
+  .light { transition: none; }
+}
