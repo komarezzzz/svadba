@@ -16,7 +16,7 @@
   #ep { position: fixed; top: 50%; left: var(--ep-left, 46vw); width: min(40vw, 560px); transform: translateY(-50%);
     overflow: hidden; pointer-events: none; z-index: 1; display: flex; align-items: center; }
   #ep article { position: absolute; left: 0; width: 100%; padding: clamp(14px, 2.2vw, 32px) clamp(16px, 2.4vw, 36px);
-    background: linear-gradient(90deg, rgba(11,10,12,.86), rgba(11,10,12,.72) 70%, rgba(11,10,12,0));
+    background: linear-gradient(90deg, rgba(11,10,12,.9), rgba(11,10,12,.82) 80%, rgba(11,10,12,.55));
     color: #e8dcc0; transform: translateX(-102%); opacity: 0; box-sizing: border-box; }
   #ep .tag { font: 400 clamp(10px, .85vw, 13px)/1.3 'Martian Mono', monospace; letter-spacing: .08em; text-transform: uppercase; color: #d98a5c; margin: 0 0 .7em; }
   #ep h2 { font: 700 clamp(22px, 2.9vw, 44px)/1.02 'Science Gothic', sans-serif; margin: 0 0 .35em; text-wrap: balance; }
@@ -101,7 +101,7 @@ table.rotation.x = -Math.PI / 2; table.receiveShadow = true; scene.add(table);
 
 scene.add(new THREE.HemisphereLight(0xbfae96, 0x15151c, 1.0));
 const key = new THREE.DirectionalLight(0xffd6a0, 1.6); key.position.set(-1.4, 2.2, 0.6); key.target.position.set(0, 0, -1.6);
-key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 5; key.shadow.bias = -0.0004;
+key.castShadow = true; key.shadow.mapSize.setScalar(Math.min(innerWidth, innerHeight) < 600 ? 1024 : 2048); key.shadow.radius = 5; key.shadow.bias = -0.0004;
 Object.assign(key.shadow.camera, { left: -2, right: 2, top: 2, bottom: -2, near: 0.5, far: 10 });
 scene.add(key, key.target);
 
@@ -141,7 +141,7 @@ const epEls = EPISODES.map(row => {
   const a = document.createElement('article');
   a.innerHTML = '<p class="tag"></p><h2></h2><p class="genre"></p><p></p><p class="arc"></p>';
   row.forEach((s, k) => { a.children[k].textContent = s; });
-  epBox.appendChild(a); return a;
+  a.setAttribute('aria-hidden', 'true'); epBox.appendChild(a); return a;
 });
 
 const cards = [];
@@ -219,6 +219,13 @@ function place(card, i, prog, time) {
   const t = reduce ? 1 : clamp01((prog - (0.04 + i * SEG)) / SEG);
   const g = reduce ? (prog > GATHER ? 1 : 0) : clamp01((prog - GATHER) / (1 - GATHER - 0.02));
   const dp = deckSpot(i);
+  if (reduce) {
+    const tr = clamp01((prog - (0.04 + i * SEG)) / SEG);
+    if (prog > GATHER || tr <= 0) { card.position.copy(dp); card.quaternion.copy(flatBack); }
+    else if (tr < 0.76) { card.position.copy(sidePos); card.quaternion.copy(showQ); }
+    else { card.position.copy(hang[i].p); card.quaternion.copy(hang[i].q); }
+    return;
+  }
   if (g > 0) {                          // все разом — обратно в колоду, рубашкой вверх
     const k = ease(g), from = hangPose(i, time).clone();
     tmpP.lerpVectors(from, dp, k); tmpP.y += Math.sin(k * Math.PI) * 0.06;
@@ -232,11 +239,11 @@ function place(card, i, prog, time) {
   } else if (t < 0.28) {                // постер в центре
     card.position.copy(showPos); card.quaternion.copy(showQ);
   } else if (t < 0.76) {                // отъезжает влево, справа читается текст серии, потом возвращается в центр
-    const k = ease(clamp01((t - 0.28) / 0.08)), back = ease(clamp01((t - 0.7) / 0.06));
-    card.position.lerpVectors(showPos, sidePos, k * (1 - back)); card.quaternion.copy(showQ);
+    const k = ease(clamp01((t - 0.28) / 0.08));
+    card.position.lerpVectors(showPos, sidePos, k); card.quaternion.copy(showQ);
   } else {                              // уплывает назад и повисает в воздухе
     const k = ease((t - 0.76) / 0.24), hp = hangPose(i, time);
-    card.position.lerpVectors(showPos, hp, k); card.quaternion.copy(tmpQ.slerpQuaternions(showQ, hang[i].q, k));
+    card.position.lerpVectors(sidePos, hp, k); card.quaternion.copy(tmpQ.slerpQuaternions(showQ, hang[i].q, k));
   }
 }
 
@@ -244,28 +251,31 @@ function place(card, i, prog, time) {
 function epText(prog) {
   epEls.forEach((el, i) => {
     const t = clamp01((prog - (0.04 + i * SEG)) / SEG);
-    const v = reduce ? (t > 0.3 && t < 0.72 ? 1 : 0) : ease(clamp01((t - 0.32) / 0.08)) * (1 - ease(clamp01((t - 0.62) / 0.07)));
-    el.style.transform = `translateX(${((v - 1) * 102).toFixed(2)}%)`; el.style.opacity = v.toFixed(3);
+    const v = reduce ? (t > 0.3 && t < 0.7 ? 1 : 0) : ease(clamp01((t - 0.32) / 0.08)) * (1 - ease(clamp01((t - 0.62) / 0.07)));
+    const key = v.toFixed(3); if (el.dataset.v === key) return; el.dataset.v = key;
+    el.style.transform = `translateX(${((v - 1) * 102).toFixed(2)}%)`; el.style.opacity = key;
+    el.setAttribute('aria-hidden', v > 0.5 ? 'false' : 'true');
   });
 }
 
 let target = 0, prog = 0;
 function readScroll() { const max = document.documentElement.scrollHeight - innerHeight; target = max > 0 ? scrollY / max : 0; }
 addEventListener('scroll', readScroll, { passive: true });
-function resize() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
+function resize() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight, false);
   bg.scale.setScalar(Math.max(1, camera.aspect / IMG_ASPECT)); layout(); } // фон без полос на широком экране
-addEventListener('resize', resize);
+addEventListener('resize', () => { resize(); readScroll(); });
 resize(); readScroll();
 window.__setProgress = p => { target = p; prog = p; };
 
 function frame() {
+  requestAnimationFrame(frame);
+  if (innerHeight > innerWidth) return;   // портрет: под заставкой не рисуем
   prog += (target - prog) * (reduce ? 1 : 0.12);
   const time = reduce ? 0 : performance.now() / 1000;
   bgMat.uniforms.time.value = time;
   cards.forEach((c, i) => place(c, i, prog, time));
   epText(prog);
   renderer.render(scene, camera);
-  requestAnimationFrame(frame);
 }
 frame();
 </script>
