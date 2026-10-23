@@ -6,10 +6,23 @@
 <title>Колода Захара</title>
 <style>
   html, body { margin: 0; background: #0b0a0c; }
-  body { height: 700vh; }
+  body { height: 1100vh; }
   canvas { position: fixed; inset: 0; width: 100vw; height: 100svh; display: block; touch-action: pan-y; }
   /* Питч смотрят только в горизонтали (Григорий 23.10): в портрете — заставка поворота. */
   @font-face { font-family: 'Finlandica Headline'; src: url('Finlandica_Headline.woff2') format('woff2'); font-display: swap; }
+  @font-face { font-family: 'Science Gothic'; src: url('Science_Gothic_lite.woff2') format('woff2'); font-display: swap; }
+  @font-face { font-family: 'Martian Mono'; src: url('Martian_Mono.woff2') format('woff2'); font-display: swap; }
+  /* Текст серии: выезжает слева направо из-за края карты. */
+  #ep { position: fixed; top: 50%; left: var(--ep-left, 46vw); width: min(40vw, 560px); transform: translateY(-50%);
+    overflow: hidden; pointer-events: none; z-index: 1; display: flex; align-items: center; }
+  #ep article { position: absolute; left: 0; width: 100%; padding: clamp(14px, 2.2vw, 32px) clamp(16px, 2.4vw, 36px);
+    background: linear-gradient(90deg, rgba(11,10,12,.86), rgba(11,10,12,.72) 70%, rgba(11,10,12,0));
+    color: #e8dcc0; transform: translateX(-102%); opacity: 0; box-sizing: border-box; }
+  #ep .tag { font: 400 clamp(10px, .85vw, 13px)/1.3 'Martian Mono', monospace; letter-spacing: .08em; text-transform: uppercase; color: #d98a5c; margin: 0 0 .7em; }
+  #ep h2 { font: 700 clamp(22px, 2.9vw, 44px)/1.02 'Science Gothic', sans-serif; margin: 0 0 .35em; text-wrap: balance; }
+  #ep .genre { font: 500 clamp(13px, 1.15vw, 18px)/1.3 'Finlandica Headline', sans-serif; color: #d98a5c; margin: 0 0 .9em; }
+  #ep p { font: 400 clamp(13px, 1.12vw, 18px)/1.42 'Finlandica Headline', sans-serif; margin: 0 0 .7em; max-width: 34em; text-wrap: pretty; }
+  #ep p.arc { color: #b9ad94; margin: 0; }
   #turn { display: none; }
   @media (orientation: portrait) {
     html, body { height: 100%; overflow: hidden; }
@@ -26,13 +39,14 @@
 </script>
 </head>
 <body>
+<div id="ep" aria-live="polite"></div>
 <div id="turn" role="alert"><i aria-hidden="true"></i>Поверните экран</div>
 <script type="module">
 import * as THREE from 'three';
 
 // Камера та же, что в прототипе 3D-текста (кадр W-T2 / «классическое Таро» снят с этой точки).
 const VFOV = 50, EYE = 1.0, PITCH = THREE.MathUtils.degToRad(24), BG_DIST = 12, IMG_ASPECT = 2752 / 1536;
-const CARD_W = 0.2, CARD_H = CARD_W * 2752 / 1846;
+const CARD_W = 0.2, CARD_H = CARD_W * 2691 / 1783;   // карта вырезана по контуру (2K-чистые)
 const N = 6;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -51,7 +65,35 @@ const rig = new THREE.Group(); rig.position.set(0, EYE, 0); rig.rotation.x = -PI
 const loader = new THREE.TextureLoader();
 const bgTex = loader.load('bg.webp'); bgTex.colorSpace = THREE.SRGBColorSpace;
 const bgH = 2 * BG_DIST * Math.tan(THREE.MathUtils.degToRad(VFOV / 2));
-const bg = new THREE.Mesh(new THREE.PlaneGeometry(bgH * IMG_ASPECT, bgH), new THREE.MeshBasicMaterial({ map: bgTex, toneMapped: false, depthWrite: false }));
+// Живой фон: огоньки свечей дрожат и колышутся, вывеска мягко «дышит». Точки свечей найдены по кадру (u, v от верхнего левого угла).
+const FLAMES = [[0.301, 0.409, 0.0], [0.337, 0.481, 1.7], [0.375, 0.534, 3.1], [0.784, 0.530, 4.6]];
+const bgMat = new THREE.ShaderMaterial({
+  uniforms: { map: { value: bgTex }, time: { value: 0 }, aspect: { value: IMG_ASPECT },
+    flames: { value: FLAMES.map(f => new THREE.Vector3(f[0], 1 - f[1], f[2])) } },
+  vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `
+    uniform sampler2D map; uniform float time, aspect; uniform vec3 flames[4]; varying vec2 vUv;
+    float flick(float p) { return sin(time * 7.3 + p) * .5 + sin(time * 13.1 + p * 2.) * .3 + sin(time * 23.7 + p * 3.) * .2; }
+    void main() {
+      vec2 uv = vUv; vec3 glow = vec3(0.);
+      for (int i = 0; i < 4; i++) {
+        vec2 d = (vUv - flames[i].xy) * vec2(aspect, 1.);
+        float near = exp(-dot(d, d) / 0.00018);
+        float f = flick(flames[i].z);
+        uv.x += near * sin(time * 9. + flames[i].z + vUv.y * 420.) * 0.0011 * (0.6 + 0.4 * f);
+        glow += vec3(1., .62, .28) * exp(-dot(d, d) / 0.0035) * (0.07 + 0.05 * f) + vec3(1., .8, .5) * near * 0.12 * f;
+      }
+      vec4 tex = texture2D(map, uv); vec3 c = tex.rgb;
+      float sgn = smoothstep(0.37, 0.41, vUv.x) * (1. - smoothstep(0.62, 0.66, vUv.x)) * smoothstep(0.62, 0.70, vUv.y);
+      float warm = clamp((c.r - c.b) * 3., 0., 1.) * smoothstep(0.35, 0.8, dot(c, vec3(.33)));
+      float pulse = 0.5 + 0.5 * sin(time * 1.25) * (0.8 + 0.2 * sin(time * 3.7));
+      c += c * sgn * warm * (0.06 + 0.22 * pulse);
+      gl_FragColor = vec4(c + glow, 1.);
+      #include <colorspace_fragment>
+    }`,
+  depthWrite: false
+});
+const bg = new THREE.Mesh(new THREE.PlaneGeometry(bgH * IMG_ASPECT, bgH), bgMat);
 bg.position.z = -BG_DIST; bg.renderOrder = -1; camera.add(bg);
 
 const table = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.ShadowMaterial({ opacity: 0.5 }));
@@ -63,79 +105,148 @@ key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 5
 Object.assign(key.shadow.camera, { left: -2, right: 2, top: 2, bottom: -2, near: 0.5, far: 10 });
 scene.add(key, key.target);
 
-// Рубашка своей колоды: кремовый картон, терракотовая рамка (рисуем на холсте, без файла).
-function backTexture() {
-  const c = document.createElement('canvas'); c.width = 360; c.height = 537; const g = c.getContext('2d');
-  g.fillStyle = '#e8dcc0'; g.fillRect(0, 0, c.width, c.height);
-  g.strokeStyle = '#b8582e'; g.lineWidth = 14; g.strokeRect(22, 22, c.width - 44, c.height - 44);
-  g.strokeStyle = '#3c4f86'; g.lineWidth = 2; g.strokeRect(40, 40, c.width - 80, c.height - 80);
-  g.strokeStyle = 'rgba(60,79,134,.45)'; g.lineWidth = 1.2;
-  for (let i = -c.height; i < c.width; i += 12) { g.beginPath(); g.moveTo(i + 40, 40); g.lineTo(i + 40 + c.height, 40 + c.height); g.stroke(); }
-  g.fillStyle = '#e8dcc0'; g.beginPath(); g.arc(c.width / 2, c.height / 2, 56, 0, 7); g.fill();
-  g.strokeStyle = '#b8582e'; g.lineWidth = 6; g.stroke();
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
-}
-const back = new THREE.MeshStandardMaterial({ map: backTexture(), roughness: 0.8 });
+// Рубашка своей колоды Захара — №13 «Солнце за решёткой» (Григорий 20.10).
+const backTex = loader.load('back13.webp'); backTex.colorSpace = THREE.SRGBColorSpace; backTex.anisotropy = 8;
+const back = new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.8, alphaTest: 0.5 });
+const edge = new THREE.MeshStandardMaterial({ color: 0xd9cba8, roughness: 0.9 });
+
+// Остаток колоды — объёмная стопка, на ней лежат шесть карт.
+const STACK = 0.014;
+const stack = new THREE.Mesh(new THREE.BoxGeometry(CARD_W, STACK, CARD_H), [edge, edge, back, edge, edge, edge]);
+stack.castShadow = stack.receiveShadow = true; scene.add(stack);
+
+// Тексты серий — черновик Старшего сценариста (КОЛОДА-ЗАХАРА-СЕРИИ-v1.md, 23.10), ждут Григория и Жеку. Номеров серий нет: не закреплены.
+const EPISODES = [
+  ['VI · Научиться', 'Главный расклад', 'Ток-шоу, семейная драма и свадебная комедия в одном эфире.',
+   'Брат и сестра делят сеть свадебных комплексов. Признаваться им придётся звонками — в эфире.',
+   'Первый прямой эфир: Захар спасает чужую свадьбу — и наутро он знаменит и без кабинета.'],
+  ['VII · Продаться', 'Не догонишь', 'Комедия погони.',
+   'Лизингу надо вернуть спорткар у блогера, который снимает шоу «Не догонишь». Захару нравится охота.',
+   'Без кабинета нужны деньги. Ради дома и дочери Захар не читая подписывает бумаги второго директора BioVibe.'],
+  ['I · Продаться', 'Антон', 'Технологическая сатира.',
+   'Цифровой корпоратив: людей заменили экраны. Захар пришёл без обновления.',
+   'Дом оплачен чужими деньгами, Катя узнала не от него. Он впервые звонит ей сам — и про дом молчит.'],
+  ['XVIII · Прочитать назад', 'Мёртвая хозяйка', 'Мистический триллер.',
+   'В особняке по ночам ходит умершая хозяйка. Захар уверен: это спектакль.',
+   'Он читает прошлое назад: тринадцать лет рядом с его семьёй был чужой, а адрес знал только Владос.'],
+  ['X · Прочитать назад', 'Вторая смена', 'Комедия-расследование.',
+   'Чемпиона-пуделя кто-то тайно возит по чужим праздникам. Захар ищет вора — а вор вся семья.',
+   'Подозревая друга, Захар роняет Владосу приманку. Платит за неё не он — единственный свидетель.'],
+  ['0 · Сменить правила', 'Прописка', 'Тюремный квест: комедия, которая становится травлей.',
+   'Хозяину квеста нужна тюрьма «по-настоящему». Захар раздаёт игрокам роли своей колодой.',
+   'Перед финалом он делает то, чего не делал тринадцать лет: правду против себя — чужим, потом дочери.'],
+];
+const epBox = document.getElementById('ep');
+const epEls = EPISODES.map(row => {
+  const a = document.createElement('article');
+  a.innerHTML = '<p class="tag"></p><h2></h2><p class="genre"></p><p></p><p class="arc"></p>';
+  row.forEach((s, k) => { a.children[k].textContent = s; });
+  epBox.appendChild(a); return a;
+});
 
 const cards = [];
 for (let i = 0; i < N; i++) {
   const tex = loader.load(`cards/card${i + 1}.webp`); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
   const card = new THREE.Group();
-  const front = new THREE.Mesh(new THREE.PlaneGeometry(CARD_W, CARD_H), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.75 }));
+  const front = new THREE.Mesh(new THREE.PlaneGeometry(CARD_W, CARD_H), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.75, alphaTest: 0.5 }));
   const rear = new THREE.Mesh(new THREE.PlaneGeometry(CARD_W, CARD_H), back); rear.rotation.y = Math.PI;
   front.castShadow = rear.castShadow = true;
   card.add(front, rear); scene.add(card); cards.push(card);
 }
 
-// Позы: колода (рубашкой вверх, слева у рук) → перед камерой (лицом) → своё место в дуге на столе (лицом вверх).
-const flat = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
+// Позы: колода (рубашкой вверх, между руками) → перед камерой (лицом) → висит в воздухе над столом, мельче →
+// в конце все разом возвращаются в колоду.
 const flatBack = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, Math.PI));
-let deckPos, slots = [], showPos = new THREE.Vector3(), showQ = new THREE.Quaternion(), showScale = 1;
+let deckPos = new THREE.Vector3(), hang = [], showPos = new THREE.Vector3(), sidePos = new THREE.Vector3(), showQ = new THREE.Quaternion();
+const SIDE_NDC = -0.42;   // куда отъезжает карта, пока читается текст (доля полуширины кадра)
+const ray = new THREE.Raycaster(), tablePlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+// Точка кадра фона (u, v от 0 до 1) → NDC с учётом того, что фон обрезан «на весь экран».
+function bgToNdc(u, v) {
+  const s = bg.scale.x;
+  return new THREE.Vector2((u - 0.5) * 2 * IMG_ASPECT * s / camera.aspect, (0.5 - v) * 2 * s);
+}
+function onTable(u, v) {
+  camera.updateMatrixWorld(); ray.setFromCamera(bgToNdc(u, v), camera);
+  return ray.ray.intersectPlane(tablePlane, new THREE.Vector3());
+}
 
 function layout() {
-  const dist = 1.55;
-  const halfW = Math.tan(THREE.MathUtils.degToRad(VFOV / 2)) * dist * camera.aspect;
-  const spread = Math.min(CARD_W * 1.25, (halfW * 2 * 0.92) / N);
-  deckPos = new THREE.Vector3(-Math.min(0.12, halfW * 0.3), 0.004, -1.22);
-  slots = [];
+  rig.updateMatrixWorld(true);   // иначе при первом расчёте камера ещё стоит в нуле
+  // колода — на свободном сукне между руками, ниже нарисованного ряда
+  deckPos.copy(onTable(0.5, 0.81));
+  stack.position.set(deckPos.x, STACK / 2, deckPos.z);
+  const camPos = new THREE.Vector3(); camera.getWorldPosition(camPos);
+  const camQ = camera.getWorldQuaternion(new THREE.Quaternion());
+  const tan2 = 2 * Math.tan(THREE.MathUtils.degToRad(VFOV / 2));
+  // перед камерой: высота карты ≈ 62 % кадра, ширина ≤ 80 %
+  const d = Math.max(CARD_H / (0.62 * tan2), CARD_W / (0.8 * tan2 * camera.aspect));
+  showPos.copy(camPos).addScaledVector(new THREE.Vector3(0, 0, -1).applyQuaternion(camQ), d);
+  showQ.copy(camQ);
+  const halfW = Math.tan(THREE.MathUtils.degToRad(VFOV / 2)) * d * camera.aspect;
+  sidePos.copy(showPos).addScaledVector(new THREE.Vector3(1, 0, 0).applyQuaternion(camQ), SIDE_NDC * halfW);
+  // текст начинается от правого края отъехавшей карты
+  const edge = (SIDE_NDC + (CARD_W / 2) / halfW + 1) / 2;
+  epBox.style.setProperty('--ep-left', (edge * 100).toFixed(2) + 'vw');
+  epBox.style.width = `min(${((0.97 - edge) * 100).toFixed(2)}vw, 600px)`;
+  epBox.style.height = Math.round(innerHeight * 0.9) + 'px';
+  // висят в воздухе: ряд в верхней половине кадра (над свечами и стулом), далеко — потому мелкие
+  hang = [];
+  const HD = 2.7, gap = Math.min(0.31, (HD * tan2 * camera.aspect * 0.86) / N);
+  const center = new THREE.Vector3(); ray.setFromCamera(bgToNdc(0.5, 0.3), camera); center.copy(ray.ray.at(HD, center));
+  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camQ);
   for (let i = 0; i < N; i++) {
     const u = i - (N - 1) / 2;
-    const x = u * spread, z = -1.62 + Math.abs(u) * 0.05;
-    const yaw = -u * 0.07;
-    slots.push({ p: new THREE.Vector3(x, 0.003 + i * 0.0006, z), q: new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, yaw)) });
+    const p = center.clone().addScaledVector(right, u * gap); p.z -= Math.abs(u) * 0.06;
+    const q = camQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, -u * 0.12, u * 0.02)));
+    hang.push({ p, q });
   }
-  // перед камерой: высота карты ≈ 62 % кадра, ширина ≤ 80 %
-  const tan2 = 2 * Math.tan(THREE.MathUtils.degToRad(VFOV / 2));
-  const d = Math.max(CARD_H / (0.62 * tan2), CARD_W / (0.8 * tan2 * camera.aspect));
-  camera.updateMatrixWorld();
-  const camPos = new THREE.Vector3(); camera.getWorldPosition(camPos);
-  const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.getWorldQuaternion(new THREE.Quaternion()));
-  showPos.copy(camPos).addScaledVector(fwd, d);
-  showQ.copy(camera.getWorldQuaternion(new THREE.Quaternion()));
-  showScale = 1;
 }
 
 const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const clamp01 = t => Math.min(1, Math.max(0, t));
 const tmpQ = new THREE.Quaternion(), tmpP = new THREE.Vector3();
+const SEG = 0.13, GATHER = 0.86;
 
-function place(card, i, prog) {
-  const s0 = 0.06 + i * 0.145, t = reduce ? 1 : clamp01((prog - s0) / 0.145);
-  const dp = deckPos.clone(); dp.y += (N - i) * 0.0012;
-  if (t <= 0) { card.position.copy(dp); card.quaternion.copy(flatBack); card.scale.setScalar(1); return; }
-  if (t < 0.42) {                       // взлёт к камере с переворотом
-    const k = ease(t / 0.42);
-    tmpP.lerpVectors(dp, showPos, k); tmpP.y += Math.sin(k * Math.PI) * 0.08;
-    card.position.copy(tmpP); tmpQ.slerpQuaternions(flatBack, showQ, k); card.quaternion.copy(tmpQ);
-    card.scale.setScalar(1 + (showScale - 1) * k);
-  } else if (t < 0.6) {                 // пауза: постер читается
-    card.position.copy(showPos); card.quaternion.copy(showQ); card.scale.setScalar(showScale);
-  } else {                              // ложится на своё место
-    const k = ease((t - 0.6) / 0.4), sl = slots[i];
-    tmpP.lerpVectors(showPos, sl.p, k); tmpP.y += Math.sin(k * Math.PI) * 0.05;
-    card.position.copy(tmpP); tmpQ.slerpQuaternions(showQ, sl.q, k); card.quaternion.copy(tmpQ);
-    card.scale.setScalar(showScale + (1 - showScale) * k);
+function deckSpot(i) { const dp = deckPos.clone(); dp.y = STACK + (N - i) * 0.0012; return dp; }
+function hangPose(i, time) {
+  const h = hang[i]; tmpP.copy(h.p);
+  if (!reduce) tmpP.y += Math.sin(time * 1.3 + i * 1.7) * 0.012;   // лёгкое покачивание в воздухе
+  return tmpP;
+}
+
+function place(card, i, prog, time) {
+  const t = reduce ? 1 : clamp01((prog - (0.04 + i * SEG)) / SEG);
+  const g = reduce ? (prog > GATHER ? 1 : 0) : clamp01((prog - GATHER) / (1 - GATHER - 0.02));
+  const dp = deckSpot(i);
+  if (g > 0) {                          // все разом — обратно в колоду, рубашкой вверх
+    const k = ease(g), from = hangPose(i, time).clone();
+    tmpP.lerpVectors(from, dp, k); tmpP.y += Math.sin(k * Math.PI) * 0.06;
+    card.position.copy(tmpP); card.quaternion.copy(tmpQ.slerpQuaternions(hang[i].q, flatBack, k)); return;
   }
+  if (t <= 0) { card.position.copy(dp); card.quaternion.copy(flatBack); return; }
+  if (t < 0.22) {                       // взлёт к камере с переворотом
+    const k = ease(t / 0.22);
+    tmpP.lerpVectors(dp, showPos, k); tmpP.y += Math.sin(k * Math.PI) * 0.08;
+    card.position.copy(tmpP); card.quaternion.copy(tmpQ.slerpQuaternions(flatBack, showQ, k));
+  } else if (t < 0.28) {                // постер в центре
+    card.position.copy(showPos); card.quaternion.copy(showQ);
+  } else if (t < 0.76) {                // отъезжает влево, справа читается текст серии, потом возвращается в центр
+    const k = ease(clamp01((t - 0.28) / 0.08)), back = ease(clamp01((t - 0.7) / 0.06));
+    card.position.lerpVectors(showPos, sidePos, k * (1 - back)); card.quaternion.copy(showQ);
+  } else {                              // уплывает назад и повисает в воздухе
+    const k = ease((t - 0.76) / 0.24), hp = hangPose(i, time);
+    card.position.lerpVectors(showPos, hp, k); card.quaternion.copy(tmpQ.slerpQuaternions(showQ, hang[i].q, k));
+  }
+}
+
+// Текст серии: выезжает из-за карты после её сдвига, уходит обратно перед тем, как карта вернётся.
+function epText(prog) {
+  epEls.forEach((el, i) => {
+    const t = clamp01((prog - (0.04 + i * SEG)) / SEG);
+    const v = reduce ? (t > 0.3 && t < 0.72 ? 1 : 0) : ease(clamp01((t - 0.32) / 0.08)) * (1 - ease(clamp01((t - 0.62) / 0.07)));
+    el.style.transform = `translateX(${((v - 1) * 102).toFixed(2)}%)`; el.style.opacity = v.toFixed(3);
+  });
 }
 
 let target = 0, prog = 0;
@@ -149,7 +260,10 @@ window.__setProgress = p => { target = p; prog = p; };
 
 function frame() {
   prog += (target - prog) * (reduce ? 1 : 0.12);
-  cards.forEach((c, i) => place(c, i, prog));
+  const time = reduce ? 0 : performance.now() / 1000;
+  bgMat.uniforms.time.value = time;
+  cards.forEach((c, i) => place(c, i, prog, time));
+  epText(prog);
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
