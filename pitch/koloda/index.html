@@ -66,20 +66,24 @@ const loader = new THREE.TextureLoader();
 const bgTex = loader.load('bg.webp'); bgTex.colorSpace = THREE.SRGBColorSpace;
 const bgH = 2 * BG_DIST * Math.tan(THREE.MathUtils.degToRad(VFOV / 2));
 // Живой фон: огоньки свечей дрожат и колышутся, вывеска мягко «дышит». Точки свечей найдены по кадру (u, v от верхнего левого угла).
-const FLAMES = [[0.301, 0.409, 0.0], [0.337, 0.481, 1.7], [0.375, 0.534, 3.1], [0.784, 0.530, 4.6]];
+// Четвёртое число — размер огонька: свечи на столе 1, настенные бра и свечи на полках дальше и мельче.
+const FLAMES = [[0.301, 0.409, 0.0, 1], [0.337, 0.481, 1.7, 1], [0.375, 0.534, 3.1, 1], [0.784, 0.530, 4.6, 1],
+  [0.160, 0.057, 0.8, 0.45], [0.167, 0.065, 2.4, 0.4], [0.173, 0.062, 5.2, 0.45],
+  [0.870, 0.062, 1.1, 0.45], [0.884, 0.054, 3.8, 0.45],
+  [0.945, 0.187, 2.9, 0.5], [0.807, 0.273, 0.4, 0.45]];
 // Сивилла 1.0 (утверждена 19.10, SV-R10b) — в мониторе кабинета; экран в кадре фона: u 0.6134–0.6806, v 0.2344–0.349.
 const svTex = loader.load('sivilla-screen.webp'); svTex.colorSpace = THREE.SRGBColorSpace;
 const bgMat = new THREE.ShaderMaterial({
   uniforms: { map: { value: bgTex }, sv: { value: svTex }, svRect: { value: new THREE.Vector4(0.6134, 1 - 0.349, 0.6806, 1 - 0.2344) }, time: { value: 0 }, aspect: { value: IMG_ASPECT },
-    flames: { value: FLAMES.map(f => new THREE.Vector3(f[0], 1 - f[1], f[2])) } },
+    flames: { value: FLAMES.map(f => new THREE.Vector4(f[0], 1 - f[1], f[2], f[3])) } },
   vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
   fragmentShader: `
-    uniform sampler2D map, sv; uniform vec4 svRect; uniform float time, aspect; uniform vec3 flames[4]; varying vec2 vUv;
+    uniform sampler2D map, sv; uniform vec4 svRect; uniform float time, aspect; uniform vec4 flames[11]; varying vec2 vUv;
     float flick(float p) { return sin(time * 7.3 + p) * .5 + sin(time * 13.1 + p * 2.) * .3 + sin(time * 23.7 + p * 3.) * .2; }
     void main() {
       vec2 uv = vUv; vec3 glow = vec3(0.);
-      for (int i = 0; i < 4; i++) {
-        vec2 d = (vUv - flames[i].xy) * vec2(aspect, 1.);
+      for (int i = 0; i < 11; i++) {
+        vec2 d = (vUv - flames[i].xy) * vec2(aspect, 1.) / flames[i].w;
         float near = exp(-dot(d, d) / 0.00018);
         float f = flick(flames[i].z);
         uv.x += near * sin(time * 9. + flames[i].z + vUv.y * 420.) * 0.0011 * (0.6 + 0.4 * f);
