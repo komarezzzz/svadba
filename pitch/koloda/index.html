@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Колода Захара</title>
+<style>
+  html, body { margin: 0; background: #0b0a0c; }
+  body { height: 700vh; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100svh; display: block; touch-action: pan-y; }
+  /* Питч смотрят только в горизонтали (Григорий 23.10): в портрете — заставка поворота. */
+  @font-face { font-family: 'Finlandica Headline'; src: url('Finlandica_Headline.woff2') format('woff2'); font-display: swap; }
+  #turn { display: none; }
+  @media (orientation: portrait) {
+    html, body { height: 100%; overflow: hidden; }
+    canvas { visibility: hidden; }
+    #turn { display: grid; place-content: center; justify-items: center; gap: 28px; position: fixed; inset: 0; z-index: 2;
+      background: #0b0a0c; color: #e8dcc0; font: 500 22px/1.3 'Finlandica Headline', sans-serif; letter-spacing: .02em; text-align: center; padding: 0 16px; }
+    #turn i { width: 46px; height: 78px; border: 3px solid #b8582e; border-radius: 9px; animation: turn 2.4s ease-in-out infinite; }
+  }
+  @keyframes turn { 0%, 25% { transform: rotate(0); } 55%, 100% { transform: rotate(-90deg); } }
+  @media (prefers-reduced-motion: reduce) { #turn i { animation: none; transform: rotate(-90deg); } }
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+</head>
+<body>
+<div id="turn" role="alert"><i aria-hidden="true"></i>Поверните экран</div>
+<script type="module">
+import * as THREE from 'three';
+
+// Камера та же, что в прототипе 3D-текста (кадр W-T2 / «классическое Таро» снят с этой точки).
+const VFOV = 50, EYE = 1.0, PITCH = THREE.MathUtils.degToRad(24), BG_DIST = 12, IMG_ASPECT = 2752 / 1536;
+const CARD_W = 0.2, CARD_H = CARD_W * 2752 / 1846;
+const N = 6;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(VFOV, innerWidth / innerHeight, 0.05, 50);
+const rig = new THREE.Group(); rig.position.set(0, EYE, 0); rig.rotation.x = -PITCH; rig.add(camera); scene.add(rig);
+
+const loader = new THREE.TextureLoader();
+const bgTex = loader.load('bg.webp'); bgTex.colorSpace = THREE.SRGBColorSpace;
+const bgH = 2 * BG_DIST * Math.tan(THREE.MathUtils.degToRad(VFOV / 2));
+const bg = new THREE.Mesh(new THREE.PlaneGeometry(bgH * IMG_ASPECT, bgH), new THREE.MeshBasicMaterial({ map: bgTex, toneMapped: false, depthWrite: false }));
+bg.position.z = -BG_DIST; bg.renderOrder = -1; camera.add(bg);
+
+const table = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.ShadowMaterial({ opacity: 0.5 }));
+table.rotation.x = -Math.PI / 2; table.receiveShadow = true; scene.add(table);
+
+scene.add(new THREE.HemisphereLight(0xbfae96, 0x15151c, 1.0));
+const key = new THREE.DirectionalLight(0xffd6a0, 1.6); key.position.set(-1.4, 2.2, 0.6); key.target.position.set(0, 0, -1.6);
+key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 5; key.shadow.bias = -0.0004;
+Object.assign(key.shadow.camera, { left: -2, right: 2, top: 2, bottom: -2, near: 0.5, far: 10 });
+scene.add(key, key.target);
+
+// Рубашка своей колоды: кремовый картон, терракотовая рамка (рисуем на холсте, без файла).
+function backTexture() {
+  const c = document.createElement('canvas'); c.width = 360; c.height = 537; const g = c.getContext('2d');
+  g.fillStyle = '#e8dcc0'; g.fillRect(0, 0, c.width, c.height);
+  g.strokeStyle = '#b8582e'; g.lineWidth = 14; g.strokeRect(22, 22, c.width - 44, c.height - 44);
+  g.strokeStyle = '#3c4f86'; g.lineWidth = 2; g.strokeRect(40, 40, c.width - 80, c.height - 80);
+  g.strokeStyle = 'rgba(60,79,134,.45)'; g.lineWidth = 1.2;
+  for (let i = -c.height; i < c.width; i += 12) { g.beginPath(); g.moveTo(i + 40, 40); g.lineTo(i + 40 + c.height, 40 + c.height); g.stroke(); }
+  g.fillStyle = '#e8dcc0'; g.beginPath(); g.arc(c.width / 2, c.height / 2, 56, 0, 7); g.fill();
+  g.strokeStyle = '#b8582e'; g.lineWidth = 6; g.stroke();
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const back = new THREE.MeshStandardMaterial({ map: backTexture(), roughness: 0.8 });
+
+const cards = [];
+for (let i = 0; i < N; i++) {
+  const tex = loader.load(`cards/card${i + 1}.webp`); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const card = new THREE.Group();
+  const front = new THREE.Mesh(new THREE.PlaneGeometry(CARD_W, CARD_H), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.75 }));
+  const rear = new THREE.Mesh(new THREE.PlaneGeometry(CARD_W, CARD_H), back); rear.rotation.y = Math.PI;
+  front.castShadow = rear.castShadow = true;
+  card.add(front, rear); scene.add(card); cards.push(card);
+}
+
+// Позы: колода (рубашкой вверх, слева у рук) → перед камерой (лицом) → своё место в дуге на столе (лицом вверх).
+const flat = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
+const flatBack = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, Math.PI));
+let deckPos, slots = [], showPos = new THREE.Vector3(), showQ = new THREE.Quaternion(), showScale = 1;
+
+function layout() {
+  const dist = 1.55;
+  const halfW = Math.tan(THREE.MathUtils.degToRad(VFOV / 2)) * dist * camera.aspect;
+  const spread = Math.min(CARD_W * 1.25, (halfW * 2 * 0.92) / N);
+  deckPos = new THREE.Vector3(-Math.min(0.12, halfW * 0.3), 0.004, -1.22);
+  slots = [];
+  for (let i = 0; i < N; i++) {
+    const u = i - (N - 1) / 2;
+    const x = u * spread, z = -1.62 + Math.abs(u) * 0.05;
+    const yaw = -u * 0.07;
+    slots.push({ p: new THREE.Vector3(x, 0.003 + i * 0.0006, z), q: new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, yaw)) });
+  }
+  // перед камерой: высота карты ≈ 62 % кадра, ширина ≤ 80 %
+  const tan2 = 2 * Math.tan(THREE.MathUtils.degToRad(VFOV / 2));
+  const d = Math.max(CARD_H / (0.62 * tan2), CARD_W / (0.8 * tan2 * camera.aspect));
+  camera.updateMatrixWorld();
+  const camPos = new THREE.Vector3(); camera.getWorldPosition(camPos);
+  const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.getWorldQuaternion(new THREE.Quaternion()));
+  showPos.copy(camPos).addScaledVector(fwd, d);
+  showQ.copy(camera.getWorldQuaternion(new THREE.Quaternion()));
+  showScale = 1;
+}
+
+const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const clamp01 = t => Math.min(1, Math.max(0, t));
+const tmpQ = new THREE.Quaternion(), tmpP = new THREE.Vector3();
+
+function place(card, i, prog) {
+  const s0 = 0.06 + i * 0.145, t = reduce ? 1 : clamp01((prog - s0) / 0.145);
+  const dp = deckPos.clone(); dp.y += (N - i) * 0.0012;
+  if (t <= 0) { card.position.copy(dp); card.quaternion.copy(flatBack); card.scale.setScalar(1); return; }
+  if (t < 0.42) {                       // взлёт к камере с переворотом
+    const k = ease(t / 0.42);
+    tmpP.lerpVectors(dp, showPos, k); tmpP.y += Math.sin(k * Math.PI) * 0.08;
+    card.position.copy(tmpP); tmpQ.slerpQuaternions(flatBack, showQ, k); card.quaternion.copy(tmpQ);
+    card.scale.setScalar(1 + (showScale - 1) * k);
+  } else if (t < 0.6) {                 // пауза: постер читается
+    card.position.copy(showPos); card.quaternion.copy(showQ); card.scale.setScalar(showScale);
+  } else {                              // ложится на своё место
+    const k = ease((t - 0.6) / 0.4), sl = slots[i];
+    tmpP.lerpVectors(showPos, sl.p, k); tmpP.y += Math.sin(k * Math.PI) * 0.05;
+    card.position.copy(tmpP); tmpQ.slerpQuaternions(showQ, sl.q, k); card.quaternion.copy(tmpQ);
+    card.scale.setScalar(showScale + (1 - showScale) * k);
+  }
+}
+
+let target = 0, prog = 0;
+function readScroll() { const max = document.documentElement.scrollHeight - innerHeight; target = max > 0 ? scrollY / max : 0; }
+addEventListener('scroll', readScroll, { passive: true });
+function resize() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
+  bg.scale.setScalar(Math.max(1, camera.aspect / IMG_ASPECT)); layout(); } // фон без полос на широком экране
+addEventListener('resize', resize);
+resize(); readScroll();
+window.__setProgress = p => { target = p; prog = p; };
+
+function frame() {
+  prog += (target - prog) * (reduce ? 1 : 0.12);
+  cards.forEach((c, i) => place(c, i, prog));
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+frame();
+</script>
+</body>
+</html>
