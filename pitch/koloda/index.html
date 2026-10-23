@@ -67,12 +67,14 @@ const bgTex = loader.load('bg.webp'); bgTex.colorSpace = THREE.SRGBColorSpace;
 const bgH = 2 * BG_DIST * Math.tan(THREE.MathUtils.degToRad(VFOV / 2));
 // Живой фон: огоньки свечей дрожат и колышутся, вывеска мягко «дышит». Точки свечей найдены по кадру (u, v от верхнего левого угла).
 const FLAMES = [[0.301, 0.409, 0.0], [0.337, 0.481, 1.7], [0.375, 0.534, 3.1], [0.784, 0.530, 4.6]];
+// Сивилла 1.0 (утверждена 19.10, SV-R10b) — в мониторе кабинета; экран в кадре фона: u 0.6134–0.6806, v 0.2344–0.349.
+const svTex = loader.load('sivilla-screen.webp'); svTex.colorSpace = THREE.SRGBColorSpace;
 const bgMat = new THREE.ShaderMaterial({
-  uniforms: { map: { value: bgTex }, time: { value: 0 }, aspect: { value: IMG_ASPECT },
+  uniforms: { map: { value: bgTex }, sv: { value: svTex }, svRect: { value: new THREE.Vector4(0.6134, 1 - 0.349, 0.6806, 1 - 0.2344) }, time: { value: 0 }, aspect: { value: IMG_ASPECT },
     flames: { value: FLAMES.map(f => new THREE.Vector3(f[0], 1 - f[1], f[2])) } },
   vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
   fragmentShader: `
-    uniform sampler2D map; uniform float time, aspect; uniform vec3 flames[4]; varying vec2 vUv;
+    uniform sampler2D map, sv; uniform vec4 svRect; uniform float time, aspect; uniform vec3 flames[4]; varying vec2 vUv;
     float flick(float p) { return sin(time * 7.3 + p) * .5 + sin(time * 13.1 + p * 2.) * .3 + sin(time * 23.7 + p * 3.) * .2; }
     void main() {
       vec2 uv = vUv; vec3 glow = vec3(0.);
@@ -88,6 +90,19 @@ const bgMat = new THREE.ShaderMaterial({
       float warm = clamp((c.r - c.b) * 3., 0., 1.) * smoothstep(0.35, 0.8, dot(c, vec3(.33)));
       float pulse = 0.5 + 0.5 * sin(time * 1.25) * (0.8 + 0.2 * sin(time * 3.7));
       c += c * sgn * warm * (0.06 + 0.22 * pulse);
+      // Сивилла: экран «дышит», отдельные пиксели вспыхивают, лёгкий отсвет на стене вокруг
+      vec2 sq = (vUv - svRect.xy) / (svRect.zw - svRect.xy);
+      float breath = 0.88 + 0.12 * sin(time * 1.6);
+      if (sq.x > 0. && sq.x < 1. && sq.y > 0. && sq.y < 1.) {
+        vec2 cell = floor(sq * vec2(42., 40.));
+        float rnd = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
+        float tw = smoothstep(0.92, 1., sin(time * (1.5 + rnd * 2.5) + rnd * 40.));
+        vec3 s = texture2D(sv, sq).rgb;
+        c = s * breath + s * tw * 0.6 + vec3(0.9, 0.5, 0.35) * tw * 0.04;
+      } else {
+        vec2 dd = (vUv - (svRect.xy + svRect.zw) * 0.5) * vec2(aspect, 1.);
+        c += vec3(0.55, 0.28, 0.32) * exp(-dot(dd, dd) / 0.012) * 0.10 * breath;
+      }
       gl_FragColor = vec4(c + glow, 1.);
       #include <colorspace_fragment>
     }`,
